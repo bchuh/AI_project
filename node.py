@@ -17,5 +17,13 @@ class Node(Poly):
         self.next_step = 0
 
     def addPiece(self, piece: Piece):
-        super(Node, self).append(piece.toList())
-        self.next_step += 1
+        '''
+        Add piece to node.
+        !!Unfinished!!
+
+        :param piece: the piece to add
+        :return: None
+        '''
+        super(Node, self).append(piece.toList())  # 添加顶点
+        self.pieces.append(piece)
+        self.next_step += 1  # 接下来是第几块拼图
