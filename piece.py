@@ -2,6 +2,7 @@ from PySide2.QtCore import QPoint
 from PySide2.QtGui import QPolygon
 from abstract_poly import Poly
 
+
 class Piece(Poly):
     '''
     Individual piece like "small triangle", "big triangle", etc.
@@ -30,9 +31,9 @@ class Piece(Poly):
             temp_list = [QPoint(0, 0), QPoint(-100, 100), QPoint(0, 200), QPoint(100, 100)]
         elif shape == 4:
             self.edgeCount = 4
-            temp_list = [QPoint(0, 0), QPoint(0, 200), QPoint(300, -100), QPoint(100, -100)]
+            temp_list = [QPoint(0, 0), QPoint(200,0), QPoint(300, -100), QPoint(100, -100)]
         else:
             NotImplementedError()
-        super(Piece, self).append(temp_list)
+        self.q_object.append(temp_list)
 
 
