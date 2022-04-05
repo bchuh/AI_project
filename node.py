@@ -19,7 +19,7 @@ class Node(Poly):
         self.edge_count = 0
         self.candidates = [0, 1, 2, 3, 4, 5, 6]
 
-    def addPiece(self, piece: Piece):
+    def addPiece(self, piece: Piece, into_idx: int = 0, from_idx: int = 0):
         '''
         Add piece to node.
         !!Unfinished!!
@@ -27,7 +27,27 @@ class Node(Poly):
         :param piece: the piece to add
         :return: None
         '''
-        self.q_object = self.q_object.united(piece.q_object)
+        _node_edge_count = self.getEdgeCount()
+        if _node_edge_count == 0:
+            _node_edge_count = 1
+        into_idx = into_idx % _node_edge_count
+        from_idx = from_idx % piece.getEdgeCount()
+        _into = into_idx
+        _skip_head = False
+        _skip_tail = False
+        if _node_edge_count != 1:
+            _ = piece.q_object.at(from_idx)
+            __ = self.q_object.at((into_idx - 1) % _node_edge_count)
+            if piece.q_object.at(from_idx) == self.q_object.at((into_idx - 1) % _node_edge_count):
+                _skip_head = True
+            if piece.q_object.at((from_idx - 1) % piece.getEdgeCount()) == self.q_object.at(into_idx):
+                _skip_tail = True
+        for i in range(from_idx, from_idx + piece.getEdgeCount()):
+            if not(i == from_idx and _skip_head) and not (i == from_idx + piece.getEdgeCount() - 1 and _skip_tail):
+                self.q_object.insert(
+                    _into, piece.q_object.at(i % piece.getEdgeCount())
+                )
+                _into += 1
         self.pieces.append(deepcopy(piece))
 
     def paint(self, scene: QGraphicsScene):

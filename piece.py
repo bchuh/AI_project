@@ -15,6 +15,7 @@ class Piece(Poly):
         shape: range, from 0 to 4
         :param shape:
         '''
+        self.shape = shape
         temp_list = []
         if shape == 0:
             # L triangle
@@ -31,9 +32,21 @@ class Piece(Poly):
             temp_list = [QPoint(0, 0), QPoint(-100, 100), QPoint(0, 200), QPoint(100, 100)]
         elif shape == 4:
             self.edgeCount = 4
-            temp_list = [QPoint(0, 0), QPoint(200,0), QPoint(300, -100), QPoint(100, -100)]
+            temp_list = [QPoint(0, 0), QPoint(200, 0), QPoint(300, -100), QPoint(100, -100)]
         else:
             NotImplementedError()
         self.q_object.append(temp_list)
 
+    def getEdgeCount(self, reduced=False):
+        '''
+        获取可用的边数，默认返回所有可用边数
 
+        :param reduced: 是否去掉重复的情况（用于piece姿态枚举）
+        :return:
+        '''
+        if reduced:
+            if self.shape == 3:
+                return 1
+            if self.shape == 4:
+                return 2
+        return len(self.q_object.toList())
