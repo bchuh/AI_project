@@ -69,11 +69,12 @@ if __name__ == "__main__":
     view = QGraphicsView()
     scene = QGraphicsScene()
     view.setScene(scene)
+    view.show()
     view.showMaximized()
 
     scale_factor = 1
     view.scale(scale_factor, scale_factor)
-    view.hide()
+    #view.hide()
     stack = []
     result_list = []
     shape_list = [0, 0, 1, 2, 2, 3, 4]  # shape ID of 7 pieces
@@ -120,8 +121,8 @@ if __name__ == "__main__":
                 view.update()
                 view.hide()'''
 
-                #
-                save_node(_const_parent_node, str(iter_count))
+
+                #save_node(_const_parent_node, str(iter_count))
             continue
         skip_L_tri = False
         skip_S_tri = False
@@ -199,15 +200,15 @@ if __name__ == "__main__":
                                     continue
                                 ### debug
 
-                                '''_node.paint(scene)
+                                _node.paint(scene)
                                 view.repaint()
-                                dieTime = QTime.currentTime().addMSecs(50)
+                                dieTime = QTime.currentTime().addMSecs(30)
                                 while (QTime.currentTime() < dieTime):
                                     QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
                                 _node.clearPoly(scene)
                                 scene.clear()  # not working for some reason
                                 view.update()
-                                '''
+
                                 ###
                                 stack.append(_node)
 

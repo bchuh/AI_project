@@ -1,5 +1,7 @@
-from PySide2.QtCore import QPoint
+from PySide2.QtCore import QPoint, Qt
 from PySide2.QtGui import QPolygon, QTransform
+from PySide2.QtWidgets import QGraphicsItem, QGraphicsPolygonItem
+
 from abstract_poly import Poly
 
 
@@ -58,3 +60,19 @@ class Piece(Poly):
         temp_list = [QPoint(0, 0), QPoint(200, 0), QPoint(100, -100), QPoint(-100, -100)]
         self.q_object=QPolygon()
         self.q_object.append(temp_list)
+
+    def setBrush(self, item_handle: QGraphicsPolygonItem):
+        shape = self.shape
+        if shape == 0:
+            # L triangle
+            item_handle.setBrush(Qt.yellow)
+        elif shape == 1:
+            item_handle.setBrush(Qt.darkMagenta)
+        elif shape == 2:
+            item_handle.setBrush(Qt.blue)
+        elif shape == 3:
+            item_handle.setBrush(Qt.red)
+        elif shape == 4:
+            item_handle.setBrush(Qt.cyan)
+        else:
+            NotImplementedError()
