@@ -1,6 +1,6 @@
 from PySide2.QtCore import QPoint
 from PySide2.QtGui import QPolygon
-from PySide2.QtWidgets import QGraphicsScene
+from PySide2.QtWidgets import QGraphicsScene, QGraphicsView
 
 from abstract_poly import Poly
 from piece import Piece
@@ -43,7 +43,7 @@ class Node(Poly):
             if piece.q_object.at((from_idx - 1) % piece.getEdgeCount()) == self.q_object.at(into_idx):
                 _skip_tail = True
         for i in range(from_idx, from_idx + piece.getEdgeCount()):
-            if not(i == from_idx and _skip_head) and not (i == from_idx + piece.getEdgeCount() - 1 and _skip_tail):
+            if not (i == from_idx and _skip_head) and not (i == from_idx + piece.getEdgeCount() - 1 and _skip_tail):
                 self.q_object.insert(
                     _into, piece.q_object.at(i % piece.getEdgeCount())
                 )
@@ -59,3 +59,13 @@ class Node(Poly):
         for i in self.scene_item_handle:
             scene.removeItem(i)
             self.scene_item_handle.pop()
+
+    def reduce(self, view: QGraphicsView):
+        _node_edge_count = self.getEdgeCount() - 1
+        while _node_edge_count >= 0:
+            _current_edge = self.getEdge(view, _node_edge_count)
+            _previous_edge = self.getEdge(view, _node_edge_count - 1)
+            angle = _current_edge.angleTo(_previous_edge)
+            if round(angle) == 0 or round(angle) == 180:
+                self.q_object.remove(_node_edge_count)
+            _node_edge_count -= 1

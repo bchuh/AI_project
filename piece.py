@@ -1,5 +1,5 @@
 from PySide2.QtCore import QPoint
-from PySide2.QtGui import QPolygon
+from PySide2.QtGui import QPolygon, QTransform
 from abstract_poly import Poly
 
 
@@ -50,3 +50,11 @@ class Piece(Poly):
             if self.shape == 4:
                 return 2
         return len(self.q_object.toList())
+
+    def isFlippable(self):
+        return self.shape == 4
+
+    def flip(self):
+        temp_list = [QPoint(0, 0), QPoint(200, 0), QPoint(100, -100), QPoint(-100, -100)]
+        self.q_object=QPolygon()
+        self.q_object.append(temp_list)
