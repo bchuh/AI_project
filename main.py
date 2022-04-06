@@ -82,8 +82,10 @@ if __name__ == "__main__":
     iter_count = 0
     _node = Node()
     _node.addPiece(
-        Piece(shape_list[_node.candidates.pop(2)])
+        Piece(shape_list[_node.candidates.pop(2)], 2),
+        False
     )
+
     stack.append(_node)
 
     while len(stack) != 0:
@@ -131,7 +133,7 @@ if __name__ == "__main__":
             # 开始创建新的子节点， 不需要深拷贝因为这是父节点
             _parent_node = deepcopy(_const_parent_node)
             _cand = _parent_node.candidates.pop(cand_no)  # _cand是指第几号拼图，是shape_list的某个位置下标
-            _exampler_piece = Piece(shape_list[_cand])  # piece样品，跟本次迭代中创建的piece一模一样，只是为了方便查看形状的边长而存在
+            _exampler_piece = Piece(shape_list[_cand], _cand)  # piece样品，跟本次迭代中创建的piece一模一样，只是为了方便查看形状的边长而存在
             if _cand == 0 and skip_L_tri:
                 continue
             if _cand == 2 and skip_S_tri:
@@ -158,15 +160,16 @@ if __name__ == "__main__":
 
                         _node_edge = _parent_node.getEdge(view, node_edge_no, True)
                         _piece_edge = _exampler_piece.getEdge(view, piece_edge_no)
+                        _n_edge_len =_node_edge.length()
+                        _p_edge_len = _piece_edge.length()
+                        longer_piece_edge = (_p_edge_len > _n_edge_len)
                         if len(candidates) == 6:  # 若为第二块，加入剪枝
-                            _ = round(_node_edge.length())
-                            __ = round(_piece_edge.length())
-                            if _node_edge.length() != (2 * _piece_edge.length()) and \
-                                    (2 * _node_edge.length()) != _piece_edge.length() and \
-                                    round(_node_edge.length()) != round(_piece_edge.length()):
+                            if _n_edge_len != (2 * _p_edge_len) and \
+                                    (2 * _n_edge_len) != _p_edge_len and \
+                                    round(_n_edge_len) != round(_p_edge_len):
                                 continue
 
-                        if round(_node_edge.length()) == round(_piece_edge.length()):
+                        if round(_n_edge_len) == round(_p_edge_len):
                             _loop_count = 1
                         else:
                             _loop_count = 2
@@ -193,8 +196,9 @@ if __name__ == "__main__":
                                     -scale_factor * (_piece_edge.p2() - _node_edge.p2()).toPoint()
                                 )
                             if _piece.q_object.intersected(_node.q_object).length() == 0:  # 检查有无非法重叠
-                                _node.addPiece(_piece, node_edge_no + 1,
+                                _node.addPiece(_piece, longer_piece_edge, node_edge_no + 1,
                                                piece_edge_no + 1)  # addPiece会对piece做deepcopy，所以这里不需要
+                                #因为insert()输入的位置参数需要是当前位置的后一位，所以node_edge_no+1, 因为画图可知priece要从边向量终点添加，所以也+1
                                 _node.reduce(view)
                                 if len(_node.candidates) <= 2 and _node.getEdgeCount() > 9:  # 因为最后一块填进去最多消除2条边，倒数第二块填进去最多消除
                                     continue
@@ -202,7 +206,7 @@ if __name__ == "__main__":
 
                                 _node.paint(scene)
                                 view.repaint()
-                                dieTime = QTime.currentTime().addMSecs(30)
+                                dieTime = QTime.currentTime().addMSecs(800)
                                 while (QTime.currentTime() < dieTime):
                                     QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
                                 _node.clearPoly(scene)

@@ -11,13 +11,16 @@ class Piece(Poly):
     shape list: L triangle (L size), M triangle, S triangle, square, parallelogram
     '''
 
-    def __init__(self, shape: int):
+    def __init__(self, shape: int, number :int):
         super(Piece, self).__init__()
         '''
         shape: range, from 0 to 4
+        no: 编号，0-6
         :param shape:
         '''
         self.shape = shape
+        self.number = number
+        self.fipped = False #为平行四边形准备的标识
         temp_list = []
         if shape == 0:
             # L triangle
@@ -60,6 +63,7 @@ class Piece(Poly):
         temp_list = [QPoint(0, 0), QPoint(200, 0), QPoint(100, -100), QPoint(-100, -100)]
         self.q_object=QPolygon()
         self.q_object.append(temp_list)
+        self.fipped=True
 
     def setBrush(self, item_handle: QGraphicsPolygonItem):
         shape = self.shape
