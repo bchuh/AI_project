@@ -7,6 +7,7 @@ from node import Node
 from piece import Piece
 from copy import deepcopy
 import pickle
+import time
 
 
 # 序列化
@@ -65,13 +66,14 @@ def load_node(file_name: str):
     return node
 
 if __name__ == "__main__":
+    start = time.time()
     app = QApplication([])
     view = QGraphicsView()
     scene = QGraphicsScene()
     view.setScene(scene)
     view.show()
     view.showMaximized()
-
+    combo_dict = {}  #记录所有组合的dict
     scale_factor = 1
     view.scale(scale_factor, scale_factor)
     #view.hide()
@@ -87,8 +89,9 @@ if __name__ == "__main__":
     )
 
     stack.append(_node)
-
+    id = 0
     while len(stack) != 0:
+          # 当前分支号码
         _const_parent_node = stack.pop()
         candidates = _const_parent_node.candidates
         print("Node expand:")
@@ -111,17 +114,18 @@ if __name__ == "__main__":
             if _const_parent_node.getEdgeCount() == 5:
                 result_list.append(_const_parent_node)
                 # Debug
-                '''
+
                 view.show()
                 _const_parent_node.paint(scene)
                 view.repaint()
-                dieTime = QTime.currentTime().addMSecs(800)
+                encoding = _const_parent_node.encodeMatrix()
+                dieTime = QTime.currentTime().addMSecs(500)
                 while (QTime.currentTime() < dieTime):
                     QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
                 _const_parent_node.clearPoly(scene)
                 scene.clear()  # not working for some reason
                 view.update()
-                view.hide()'''
+                view.hide()
 
 
                 #save_node(_const_parent_node, str(iter_count))
@@ -134,13 +138,13 @@ if __name__ == "__main__":
             _parent_node = deepcopy(_const_parent_node)
             _cand = _parent_node.candidates.pop(cand_no)  # _cand是指第几号拼图，是shape_list的某个位置下标
             _exampler_piece = Piece(shape_list[_cand], _cand)  # piece样品，跟本次迭代中创建的piece一模一样，只是为了方便查看形状的边长而存在
-            if _cand == 0 and skip_L_tri:
+            if shape_list[_cand] == 0 and skip_L_tri:
                 continue
-            if _cand == 2 and skip_S_tri:
+            if shape_list[_cand] == 2 and skip_S_tri:
                 continue
-            if _cand == 0:
+            if shape_list[_cand] == 0:
                 skip_L_tri = True
-            if _cand == 2:
+            if shape_list[_cand] == 2:
                 skip_S_tri = True
             if _exampler_piece.isFlippable():
                 _flip_loop = 2
@@ -177,6 +181,7 @@ if __name__ == "__main__":
                         for i in range(_loop_count):
                             _node = deepcopy(_parent_node)
                             _piece = deepcopy(_exampler_piece)  # create a new one instead of sharing
+                            _node.parent_ID = _parent_node.ID
                             _node_edge = _node.getEdge(view, node_edge_no, True)
                             _piece_edge = _piece.getEdge(view, piece_edge_no)
                             # 开始旋转
@@ -202,11 +207,21 @@ if __name__ == "__main__":
                                 _node.reduce(view)
                                 if len(_node.candidates) <= 2 and _node.getEdgeCount() > 9:  # 因为最后一块填进去最多消除2条边，倒数第二块填进去最多消除
                                     continue
+                                '''
+                                检查当前组合是否重复：
+                                '''
+
+                                encoding=_node.encodeMatrix()
+                                if encoding in combo_dict:
+                                    continue
+                                else:
+                                    combo_dict[encoding] = 1  # 随便给键赋个值
                                 ### debug
 
                                 _node.paint(scene)
                                 view.repaint()
-                                dieTime = QTime.currentTime().addMSecs(800)
+                                view.show()
+                                dieTime = QTime.currentTime().addMSecs(50)
                                 while (QTime.currentTime() < dieTime):
                                     QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
                                 _node.clearPoly(scene)
@@ -214,7 +229,11 @@ if __name__ == "__main__":
                                 view.update()
 
                                 ###
+                                id+=1
+                                _node.ID=id
                                 stack.append(_node)
-
+    end=time.time()
+    print(len(result_list), "combination found!")
+    print("The time of execution is :", (end - start)/60/60, "hours")
     app.exec_()
 
