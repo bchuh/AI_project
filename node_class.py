@@ -91,19 +91,23 @@ class Node(Poly):
         self.pieces.append(deepcopy(piece))
 
     def updateMatrix(self, piece: Piece, into_idx: int, from_idx: int,
-                     connect_head: bool, connect_tail: bool, initialize=False):
+                     connect_head: bool, connect_tail: bool, initialize=False, piece_filpped=False):
         if initialize:
             return
+        if piece_filpped == True:
+            flip_marker = -1
+        else:
+            flip_marker = 1
         from_idx = (from_idx-1) % piece.getEdgeCount()  # 找回0~2表示下的出发点号码
         from_idx += 1  #转为1~3表述
         if connect_head:
             _N_info = self.edge_owner[into_idx - 1][0]
-            _p_info = (piece.number, from_idx)
+            _p_info = (piece.number, flip_marker*from_idx)
             self.matrix[_N_info[0]][_p_info[0]] = _N_info[1]
             self.matrix[_p_info[0]][_N_info[0]] = _p_info[1]
         if connect_tail:
             _N_info = self.edge_owner[into_idx - 1][1]
-            _p_info = (piece.number, from_idx)
+            _p_info = (piece.number, flip_marker*from_idx)
             self.matrix[_N_info[0]][_p_info[0]] = _N_info[1]
             self.matrix[_p_info[0]][_N_info[0]] = _p_info[1]
 

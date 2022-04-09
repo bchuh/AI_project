@@ -139,7 +139,7 @@ if __name__ == "__main__":
 
 
 
-                save_node(_const_parent_node, str(iter_count))
+                #save_node(_const_parent_node, str(iter_count))
             continue
         skip_L_tri = False
         skip_S_tri = False
@@ -175,13 +175,13 @@ if __name__ == "__main__":
 
                         _node_edge = _parent_node.getEdge(view, node_edge_no, True)
                         _piece_edge = _exampler_piece.getEdge(view, piece_edge_no)
-                        _n_edge_len = round(_node_edge.length())
-                        _p_edge_len = round(_piece_edge.length())
+                        _n_edge_len = _node_edge.length()
+                        _p_edge_len = _piece_edge.length()
 
                         longer_piece_edge = (_p_edge_len > _n_edge_len)
                         if len(_parent_node.candidates) == 5:  # 若为第二块，加入剪枝
-                            if _n_edge_len != (2 * _p_edge_len) and \
-                                    (2 * _n_edge_len) != _p_edge_len and \
+                            if round(_n_edge_len) != round(2 * _p_edge_len) and \
+                                    round(2 * _n_edge_len) != round(_p_edge_len) and \
                                     round(_n_edge_len) != round(_p_edge_len):
                                 continue
 
@@ -231,7 +231,7 @@ if __name__ == "__main__":
                                 '''
 
                                 encoding=_node.encodeMatrix()
-                                if encoding in combo_dict:
+                                if len(_parent_node.candidates) < 4 and encoding in combo_dict:  #防止过早剪枝， 会错减
                                     continue
                                 else:
                                     combo_dict[encoding] = 1  # 随便给键赋个值
@@ -240,7 +240,7 @@ if __name__ == "__main__":
                                 '''_node.paint(scene)
                                 view.repaint()
                                 view.show()
-                                dieTime = QTime.currentTime().addMSecs(5)
+                                dieTime = QTime.currentTime().addMSecs(500)
                                 while (QTime.currentTime() < dieTime):
                                     QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
                                 _node.clearPoly(scene)
