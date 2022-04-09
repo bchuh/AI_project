@@ -1,6 +1,6 @@
 from PySide2.QtCore import QPoint, Qt
 from PySide2.QtGui import QPolygon, QTransform
-from PySide2.QtWidgets import QGraphicsItem, QGraphicsPolygonItem
+from PySide2.QtWidgets import QGraphicsItem, QGraphicsPolygonItem, QGraphicsView
 
 from abstract_poly import Poly
 
@@ -11,7 +11,7 @@ class Piece(Poly):
     shape list: L triangle (L size), M triangle, S triangle, square, parallelogram
     '''
 
-    def __init__(self, shape: int, number :int):
+    def __init__(self, shape: int, number :int, view:QGraphicsView = None):
         super(Piece, self).__init__()
         '''
         shape: range, from 0 to 4
@@ -21,6 +21,7 @@ class Piece(Poly):
         self.shape = shape
         self.number = number
         self.flipped = False #为平行四边形准备的标识
+        self.edge_length = []
         temp_list = []
         if shape == 0:
             # L triangle
@@ -41,6 +42,9 @@ class Piece(Poly):
         else:
             NotImplementedError()
         self.q_object.append(temp_list)
+        if view is not None:
+            for i in range(self.getEdgeCount()):
+                self.edge_length.append(self.getEdge(view, i).length())
 
     def getEdgeCount(self, reduced=False):
         '''
