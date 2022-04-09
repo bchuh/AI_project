@@ -55,7 +55,7 @@ class Node(Poly):
             if piece.q_object.at((from_idx - 1) % piece.getEdgeCount()) == self.q_object.at(into_idx):
                 _skip_tail = True
 
-        self.updateMatrix(piece, into_idx, from_idx, _skip_head, _skip_tail, is_initial)
+        self.updateMatrix(piece, into_idx, from_idx, _skip_head, _skip_tail, is_initial, piece.flipped)
 
         if _node_edge_count != 1:
             if _skip_head:
@@ -100,16 +100,21 @@ class Node(Poly):
             flip_marker = 1
         from_idx = (from_idx-1) % piece.getEdgeCount()  # 找回0~2表示下的出发点号码
         from_idx += 1  #转为1~3表述
+
         if connect_head:
             _N_info = self.edge_owner[into_idx - 1][0]
             _p_info = (piece.number, flip_marker*from_idx)
             self.matrix[_N_info[0]][_p_info[0]] = _N_info[1]
             self.matrix[_p_info[0]][_N_info[0]] = _p_info[1]
         if connect_tail:
+            if connect_head:
+                a = 100
+            else:
+                a = 10
             _N_info = self.edge_owner[into_idx - 1][1]
             _p_info = (piece.number, flip_marker*from_idx)
-            self.matrix[_N_info[0]][_p_info[0]] = _N_info[1]
-            self.matrix[_p_info[0]][_N_info[0]] = _p_info[1]
+            self.matrix[_N_info[0]][_p_info[0]] = a*_N_info[1]
+            self.matrix[_p_info[0]][_N_info[0]] = a*_p_info[1]
 
     def paint(self, scene: QGraphicsScene):
         for item in self.pieces:
@@ -142,8 +147,8 @@ class Node(Poly):
                     _N_info1 = self.edge_owner[_node_edge_count][-1]
                     _N_info2 = self.edge_owner[_node_edge_count-1][0] #可能会有[-1]，不过python问题不大
                     if connect:
-                        self.matrix[_N_info1[0]][_N_info2[0]] = _N_info1[1]
-                        self.matrix[_N_info2[0]][_N_info1[0]] = _N_info2[1]
+                        self.matrix[_N_info1[0]][_N_info2[0]] = 100*_N_info1[1]
+                        self.matrix[_N_info2[0]][_N_info1[0]] = 100*_N_info2[1]
                     _prev_temp=(_node_edge_count-1)%self.getEdgeCount()
                     if self.q_object.at(
                             _prev_temp

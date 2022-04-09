@@ -231,7 +231,7 @@ if __name__ == "__main__":
                                 '''
 
                                 encoding=_node.encodeMatrix()
-                                if len(_parent_node.candidates) < 4 and encoding in combo_dict:  #防止过早剪枝， 会错减
+                                if encoding in combo_dict:  #防止过早剪枝， 会错减
                                     continue
                                 else:
                                     combo_dict[encoding] = 1  # 随便给键赋个值
