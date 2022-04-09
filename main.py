@@ -34,7 +34,8 @@ def unserialize_object(d):
 def save_node(node: Node, file_name: str):
     _path = os.getcwd()
     _name = file_name + '.node'
-    _path = os.path.join(_path, _name)
+    _folder = "nodes"
+    _path = os.path.join(_path, _folder, _name)
     with open(_name, 'wb') as f:
         pickle.dump(node, f)
 
@@ -49,7 +50,8 @@ def load_node(file_name: str):
 
     _path = os.getcwd()
     _name = file_name + '.node'
-    _path = os.path.join(_path, _name)
+    _folder = "nodes"
+    _path = os.path.join(_path, _folder,  _name)
     with open(_path, 'rb') as f:
         node = pickle.load(f)
 
@@ -119,7 +121,7 @@ if __name__ == "__main__":
                 _const_parent_node.paint(scene)
                 view.repaint()
                 encoding = _const_parent_node.encodeMatrix()
-                dieTime = QTime.currentTime().addMSecs(500)
+                dieTime = QTime.currentTime().addMSecs(10)
                 while (QTime.currentTime() < dieTime):
                     QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
                 _const_parent_node.clearPoly(scene)
@@ -128,7 +130,7 @@ if __name__ == "__main__":
                 view.hide()
 
 
-                #save_node(_const_parent_node, str(iter_count))
+                save_node(_const_parent_node, str(iter_count))
             continue
         skip_L_tri = False
         skip_S_tri = False
@@ -218,7 +220,7 @@ if __name__ == "__main__":
                                     combo_dict[encoding] = 1  # 随便给键赋个值
                                 ### debug
 
-                                _node.paint(scene)
+                                '''_node.paint(scene)
                                 view.repaint()
                                 view.show()
                                 dieTime = QTime.currentTime().addMSecs(50)
@@ -226,7 +228,7 @@ if __name__ == "__main__":
                                     QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
                                 _node.clearPoly(scene)
                                 scene.clear()  # not working for some reason
-                                view.update()
+                                view.update()'''
 
                                 ###
                                 id+=1
@@ -234,6 +236,7 @@ if __name__ == "__main__":
                                 stack.append(_node)
     end=time.time()
     print(len(result_list), "combination found!")
+    print("Stored combinations: ", len(combo_dict))
     print("The time of execution is :", (end - start)/60/60, "hours")
     app.exec_()
 
