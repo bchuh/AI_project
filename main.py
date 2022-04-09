@@ -3,7 +3,7 @@ import os
 from PySide2.QtCore import QPoint, QLineF, QPointF, QTime, QCoreApplication, QEventLoop, Qt
 from PySide2.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsScene
 from PySide2.QtGui import QPolygon, QTransform
-from node import Node
+from node_class import Node
 from piece import Piece
 from copy import deepcopy
 import pickle
@@ -36,34 +36,40 @@ def save_node(node: Node, file_name: str):
     _name = file_name + '.node'
     _folder = "nodes"
     _path = os.path.join(_path, _folder, _name)
-    with open(_name, 'wb') as f:
+    with open(_path, 'wb') as f:
         pickle.dump(node, f)
 
 
-def load_node(file_name: str):
+def load_node(file_name: str, with_suffix_and_absolute_path = False):
     '''
     load node class from .json
 
     :param file_name: name, with out '.json' suffix
+    :param with_suffix: file_name是否带有.node后缀，若无则自动加上该后缀
     :return: Node object
     '''
 
     _path = os.getcwd()
-    _name = file_name + '.node'
-    _folder = "nodes"
-    _path = os.path.join(_path, _folder,  _name)
+    if not with_suffix_and_absolute_path:
+        _name = file_name + '.node'
+        _folder = "nodes"
+        _path = os.path.join(_path, _folder)
+        _path = os.path.join(_path,  _name)
+    else:
+        _path = file_name
+
     with open(_path, 'rb') as f:
         node = pickle.load(f)
 
     ### Debug
-    app = QApplication([])
+    '''app = QApplication([])
     view = QGraphicsView()
     scene = QGraphicsScene()
     view.setScene(scene)
     node.paint(scene)
     view.repaint()
     view.showMaximized()
-    app.exec_()
+    app.exec_()'''
     ###
     return node
 
@@ -82,6 +88,9 @@ if __name__ == "__main__":
     stack = []
     result_list = []
     shape_list = [0, 0, 1, 2, 2, 3, 4]  # shape ID of 7 pieces
+    exampler_pieces = []  # 创建7个块的样板，用来查边长
+    for i in range(len(shape_list)):
+        exampler_pieces.append(Piece(shape_list[i], i, view=view))
 
     iter_count = 0
     _node = Node()
@@ -116,25 +125,25 @@ if __name__ == "__main__":
             if _const_parent_node.getEdgeCount() == 5:
                 result_list.append(_const_parent_node)
                 # Debug
-
+                view.hide()
                 view.show()
                 _const_parent_node.paint(scene)
                 view.repaint()
                 encoding = _const_parent_node.encodeMatrix()
-                dieTime = QTime.currentTime().addMSecs(10)
+                dieTime = QTime.currentTime().addMSecs(1)
                 while (QTime.currentTime() < dieTime):
                     QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
                 _const_parent_node.clearPoly(scene)
                 scene.clear()  # not working for some reason
                 view.update()
-                view.hide()
 
 
-                save_node(_const_parent_node, str(iter_count))
+
+                #save_node(_const_parent_node, str(iter_count))
             continue
         skip_L_tri = False
         skip_S_tri = False
-        for cand_no in range(len(candidates)):
+        for cand_no in range(len(candidates)): #debug
             # print("Len(candidates):", len(candidates))
             # 开始创建新的子节点， 不需要深拷贝因为这是父节点
             _parent_node = deepcopy(_const_parent_node)
@@ -166,10 +175,11 @@ if __name__ == "__main__":
 
                         _node_edge = _parent_node.getEdge(view, node_edge_no, True)
                         _piece_edge = _exampler_piece.getEdge(view, piece_edge_no)
-                        _n_edge_len =_node_edge.length()
-                        _p_edge_len = _piece_edge.length()
+                        _n_edge_len = round(_node_edge.length())
+                        _p_edge_len = round(_piece_edge.length())
+
                         longer_piece_edge = (_p_edge_len > _n_edge_len)
-                        if len(candidates) == 6:  # 若为第二块，加入剪枝
+                        if len(_parent_node.candidates) == 5:  # 若为第二块，加入剪枝
                             if _n_edge_len != (2 * _p_edge_len) and \
                                     (2 * _n_edge_len) != _p_edge_len and \
                                     round(_n_edge_len) != round(_p_edge_len):
@@ -192,21 +202,28 @@ if __name__ == "__main__":
                             trans.rotate(360 - angle)
                             _piece.q_object = trans.map(_piece.q_object)
                             # 因为旋转改变了坐标，要再获取一次
-                            _node_edge = _node.getEdge(view, node_edge_no, True)
-                            _piece_edge = _piece.getEdge(view, piece_edge_no)
+                            _node_edge = _node.getEdge(view, node_edge_no)
+                            _piece_edge = _piece.getEdge(view, piece_edge_no, True)
                             if i == 0:
                                 _piece.q_object.translate(
                                     -scale_factor * (_piece_edge.p1() - _node_edge.p1()).toPoint()
                                 )
+                                _neighbor_edge=_node.getEdge(view, node_edge_no-1)
+                                node_angle = _neighbor_edge.angleTo(_node_edge)
                             else:
                                 _piece.q_object.translate(
                                     -scale_factor * (_piece_edge.p2() - _node_edge.p2()).toPoint()
                                 )
+                                _neighbor_edge = _node.getEdge(view, node_edge_no + 1)
+                                node_angle = _node_edge.angleTo(_neighbor_edge)
+                            # check if connect to an outer vertex
+                            if node_angle >= 180:
+                                continue
                             if _piece.q_object.intersected(_node.q_object).length() == 0:  # 检查有无非法重叠
                                 _node.addPiece(_piece, longer_piece_edge, node_edge_no + 1,
                                                piece_edge_no + 1)  # addPiece会对piece做deepcopy，所以这里不需要
                                 #因为insert()输入的位置参数需要是当前位置的后一位，所以node_edge_no+1, 因为画图可知priece要从边向量终点添加，所以也+1
-                                _node.reduce(view)
+                                _node.reduce(view, exampler_pieces)
                                 if len(_node.candidates) <= 2 and _node.getEdgeCount() > 9:  # 因为最后一块填进去最多消除2条边，倒数第二块填进去最多消除
                                     continue
                                 '''
@@ -223,7 +240,7 @@ if __name__ == "__main__":
                                 '''_node.paint(scene)
                                 view.repaint()
                                 view.show()
-                                dieTime = QTime.currentTime().addMSecs(50)
+                                dieTime = QTime.currentTime().addMSecs(5)
                                 while (QTime.currentTime() < dieTime):
                                     QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
                                 _node.clearPoly(scene)
@@ -233,6 +250,14 @@ if __name__ == "__main__":
                                 ###
                                 id+=1
                                 _node.ID=id
+                                #### debug 2
+                                '''_debug_matrix=_node.matrix
+                                _debug_list=[]
+                                for i in range(7):
+                                    if _debug_matrix[5][i] in _debug_list and _debug_matrix[5][i]!=0:
+                                        print("WTF?")
+                                    _debug_list.append(_debug_matrix[5][i])'''
+                                ####
                                 stack.append(_node)
     end=time.time()
     print(len(result_list), "combination found!")
