@@ -19,6 +19,7 @@ class Poly:
 
     def getEdge(self, view: QGraphicsView, start_index, reverse=False):
         _edge_count = self.getEdgeCount()
+        start_index = start_index % _edge_count
         if not reverse :
             line = QLineF(view.mapToScene(self.q_object.at(start_index)),
                           view.mapToScene(self.q_object.at((start_index + 1) % _edge_count)))

@@ -177,7 +177,8 @@ if __name__ == "__main__":
                         _piece_edge = _exampler_piece.getEdge(view, piece_edge_no)
                         _n_edge_len = _node_edge.length()
                         _p_edge_len = _piece_edge.length()
-
+                        is_original_edge = _parent_node.isOriginalPieceEdge(_parent_node.edge_owner[node_edge_no], exampler_pieces, _node_edge)
+                        is_combo_original_edge = _parent_node.isComboOfOriginalPieceEdge(_parent_node.edge_owner[node_edge_no], exampler_pieces, _node_edge)
                         longer_piece_edge = (_p_edge_len > _n_edge_len)
                         if len(_parent_node.candidates) == 5:  # 若为第二块，加入剪枝
                             if round(_n_edge_len) != round(2 * _p_edge_len) and \
@@ -189,7 +190,10 @@ if __name__ == "__main__":
                             _loop_count = 1
                         else:
                             _loop_count = 2
-
+                        ## Debug:
+                        if _cand==6 and _exampler_piece.flipped and node_edge_no==2:
+                            _loop_count=1
+                        ###
                         for i in range(_loop_count):
                             _node = deepcopy(_parent_node)
                             _piece = deepcopy(_exampler_piece)  # create a new one instead of sharing
@@ -220,10 +224,10 @@ if __name__ == "__main__":
                             if node_angle >= 180:
                                 continue
                             if _piece.q_object.intersected(_node.q_object).length() == 0:  # 检查有无非法重叠
-                                _node.addPiece(_piece, longer_piece_edge, node_edge_no + 1,
+                                _node.addPiece(_piece, longer_piece_edge, is_original_edge, node_edge_no + 1,
                                                piece_edge_no + 1)  # addPiece会对piece做deepcopy，所以这里不需要
                                 #因为insert()输入的位置参数需要是当前位置的后一位，所以node_edge_no+1, 因为画图可知priece要从边向量终点添加，所以也+1
-                                _node.reduce(view, exampler_pieces)
+                                _node.reduce(view, exampler_pieces, _cand)
                                 if len(_node.candidates) <= 2 and _node.getEdgeCount() > 9:  # 因为最后一块填进去最多消除2条边，倒数第二块填进去最多消除
                                     continue
                                 '''
@@ -237,15 +241,15 @@ if __name__ == "__main__":
                                     combo_dict[encoding] = 1  # 随便给键赋个值
                                 ### debug
 
-                                '''_node.paint(scene)
+                                _node.paint(scene)
                                 view.repaint()
                                 view.show()
-                                dieTime = QTime.currentTime().addMSecs(500)
+                                dieTime = QTime.currentTime().addMSecs(1)
                                 while (QTime.currentTime() < dieTime):
                                     QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
                                 _node.clearPoly(scene)
                                 scene.clear()  # not working for some reason
-                                view.update()'''
+                                view.update()
 
                                 ###
                                 id+=1
@@ -258,6 +262,8 @@ if __name__ == "__main__":
                                         print("WTF?")
                                     _debug_list.append(_debug_matrix[5][i])'''
                                 ####
+                                if len(_node.candidates)==0 and _node.getEdgeCount() == 5:
+                                    print('stop')
                                 stack.append(_node)
     end=time.time()
     print(len(result_list), "combination found!")

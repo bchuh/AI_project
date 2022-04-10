@@ -23,7 +23,7 @@ class Node(Poly):
         self.matrix = np.zeros((7, 7), dtype=int)
         self.parent_ID=0
         self.ID=0
-    def addPiece(self, piece: Piece, longer_piece_edge: bool, into_idx: int = 0, from_idx: int = 0):
+    def addPiece(self, piece: Piece, longer_piece_edge: bool, is_original_edge :bool = True, into_idx: int = 0, from_idx: int = 0):
         '''
         Add piece to node.
         !!Unfinished!!
@@ -55,7 +55,7 @@ class Node(Poly):
             if piece.q_object.at((from_idx - 1) % piece.getEdgeCount()) == self.q_object.at(into_idx):
                 _skip_tail = True
 
-        self.updateMatrix(piece, into_idx, from_idx, _skip_head, _skip_tail, is_initial, piece.flipped)
+        self.updateMatrix(piece, into_idx, from_idx, _skip_head, _skip_tail, is_original_edge, is_initial, piece.flipped)
 
         if _node_edge_count != 1:
             if _skip_head:
@@ -91,7 +91,7 @@ class Node(Poly):
         self.pieces.append(deepcopy(piece))
 
     def updateMatrix(self, piece: Piece, into_idx: int, from_idx: int,
-                     connect_head: bool, connect_tail: bool, initialize=False, piece_filpped=False):
+                     connect_head: bool, connect_tail: bool, is_original_edge :bool, initialize=False, piece_filpped=False):
         if initialize:
             return
         if piece_filpped == True:
@@ -107,7 +107,7 @@ class Node(Poly):
             self.matrix[_N_info[0]][_p_info[0]] = _N_info[1]
             self.matrix[_p_info[0]][_N_info[0]] = _p_info[1]
         if connect_tail:
-            if connect_head:
+            if connect_head and is_original_edge:
                 a = 100
             else:
                 a = 10
@@ -115,6 +115,8 @@ class Node(Poly):
             _p_info = (piece.number, flip_marker*from_idx)
             self.matrix[_N_info[0]][_p_info[0]] = a*_N_info[1]
             self.matrix[_p_info[0]][_N_info[0]] = a*_p_info[1]
+
+
 
     def paint(self, scene: QGraphicsScene):
         for item in self.pieces:
@@ -128,7 +130,7 @@ class Node(Poly):
             scene.removeItem(i)
             self.scene_item_handle.pop()
 
-    def reduce(self, view: QGraphicsView, exampler_pieces: list):
+    def reduce(self, view: QGraphicsView, exampler_pieces: list, last_cand :int):
         _node_edge_count = self.getEdgeCount() - 1
         while _node_edge_count >= 0:
             _current_edge = self.getEdge(view, _node_edge_count)
@@ -144,15 +146,39 @@ class Node(Poly):
                         connect = True
                     else:
                         connect = False
+
                     _N_info1 = self.edge_owner[_node_edge_count][-1]
                     _N_info2 = self.edge_owner[_node_edge_count-1][0] #可能会有[-1]，不过python问题不大
                     if connect:
-                        self.matrix[_N_info1[0]][_N_info2[0]] = 100*_N_info1[1]
-                        self.matrix[_N_info2[0]][_N_info1[0]] = 100*_N_info2[1]
+                        if _N_info1[0] == last_cand:
+                            #connect tail
+                            a = 10
+                        elif _N_info2[0] == last_cand:
+                            #connect head
+                            a = 1
+                        self.matrix[_N_info1[0]][_N_info2[0]] = a*_N_info1[1]
+                        self.matrix[_N_info2[0]][_N_info1[0]] = a*_N_info2[1]
+
+
                     _prev_temp=(_node_edge_count-1)%self.getEdgeCount()
                     if self.q_object.at(
                             _prev_temp
                     )==self.q_object.at(_node_edge_count):
+                        _N_info1 = self.edge_owner[_node_edge_count][-1]
+                        _N_info2 = self.edge_owner[_node_edge_count - 1][0]  # 可能会有[-1]，不过python问题不大
+                        if _N_info1[0] == last_cand:
+                            #connect head
+                            a = 1
+                        elif _N_info2[0] == last_cand:
+                            #connect tail
+                            a = 10
+                        else:
+                            NotImplementedError()
+                        if connect:
+                            a = 100  #用100重新标
+                        self.matrix[_N_info1[0]][_N_info2[0]] = a * _N_info1[1]
+                        self.matrix[_N_info2[0]][_N_info1[0]] = a * _N_info2[1]
+
                         self.q_object.remove(_prev_temp)
                         self.edge_owner.pop(_node_edge_count)
                         self.edge_owner.pop(_prev_temp)
@@ -186,25 +212,38 @@ class Node(Poly):
             if not _L_done:
                 if matrix[0][i] > matrix[1][i]:
                     swap_L_tri = True
-                    _L_done = True
+                    break
                 elif matrix[0][i] < matrix[1][i]:
-                    _L_done = True
-            if not _S_done:
-                if matrix[3][i] > matrix[4][i]:
-                    swap_S_tri = True
-                    _S_done = True
-                elif matrix[3][i] < matrix[4][i]:
-                    _S_done = True
-            if matrix[5][i] > 0:
-                if first_square_edge == 0:
-                    first_square_edge = matrix[5][i]
-                matrix[5][i] = (matrix[5][i]-1 - (first_square_edge-1)) % 4 + 1
+                    break
         if swap_L_tri:
             matrix[[0, 1], :] = matrix[[1, 0], :]
             matrix[:, [0, 1]] = matrix[:, [1, 0]]
+
+        for i in range(7):
+            if not _S_done:
+                if matrix[3][i] > matrix[4][i]:
+                    swap_S_tri = True
+                    break
+                elif matrix[3][i] < matrix[4][i]:
+                    break
         if swap_S_tri:
             matrix[[3, 4], :] = matrix[[4, 3], :]
             matrix[:, [3, 4]] = matrix[:, [4, 3]]
+        for i in range(7):
+            if matrix[5][i] > 0:
+                if matrix[5][i]<10:
+                    scale=1
+                elif matrix[5][i]<100:
+                    scale=10
+                elif matrix[5][i]<1000:
+                    scale=100
+                else:
+                    NotImplementedError()
+                matrix[5][i] = matrix[5][i] // scale
+                if first_square_edge == 0:
+                    first_square_edge = matrix[5][i]
+                matrix[5][i] = (matrix[5][i]-1 - (first_square_edge-1)) % 4 + 1
+                matrix[5][i] = matrix[5][i] * scale
         return matrix
 
     def hasSameVertix(self, edge_tup_of_tup: tuple):
@@ -225,4 +264,28 @@ class Node(Poly):
         else:
             return False
 
-
+    def isComboOfOriginalPieceEdge(self, edge_tup_of_tup, exampler_pieces, edge :QLineF):
+        '''
+        If is the combination of 2 origianl piece edge noted by edge_tupe_of_tupe
+        :param edge_tup_of_tup:
+        :param exampler_pieces:
+        :param edge:
+        :return:
+        '''
+        '''num1, edge_no1 = edge_tup_of_tup[0]
+        num2, edge_no2 = edge_tup_of_tup[1]
+        piece1: Piece = exampler_pieces[num1]
+        piece2: Piece = exampler_pieces[num2]
+        if edge_no1<0:
+            edge_no1 = -1*edge_no1
+        edge_no1-=1
+        if edge_no2<0:
+            edge_no2 = -1*edge_no2
+        edge_no2-=1
+        original_length1 = piece1.edge_length[edge_no1]
+        original_length2 = piece2.edge_length[edge_no2]
+        if round(edge.length()) == round(original_length1+original_length2):
+            return True
+        else:
+            return False'''
+        return True #函数暂时无用
