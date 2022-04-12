@@ -103,30 +103,35 @@ if __name__ == "__main__":
     id = 0
     while len(stack) != 0:
           # 当前分支号码
+        app.processEvents()
         _const_parent_node = stack.pop()
         candidates = _const_parent_node.candidates
         print("Node expand:")
         print("#result: ", len(result_list))
         if len(candidates) == 0:
             # Debug
-            '''view.show()
+            '''#view.show
+            scene.clear()
+            view.update()
             _const_parent_node.paint(scene)
             view.repaint()
             dieTime = QTime.currentTime().addMSecs(10)
             while (QTime.currentTime() < dieTime):
                 QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
             _const_parent_node.clearPoly(scene)
-            scene.clear()  # not working for some reason
-            view.update()
-            '''
+            #scene.clear()  # not working for some reason
+            #view.update()'''
+
             #
             iter_count += 1  # 第几个组合
 
             if _const_parent_node.getEdgeCount() == 5:
                 result_list.append(_const_parent_node)
                 # Debug
-                view.hide()
-                view.show()
+                #view.hide()
+                #view.show()
+                scene.clear()
+                view.update()
                 _const_parent_node.paint(scene)
                 view.repaint()
                 encoding = _const_parent_node.encodeMatrix()
@@ -134,12 +139,12 @@ if __name__ == "__main__":
                 while (QTime.currentTime() < dieTime):
                     QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
                 _const_parent_node.clearPoly(scene)
-                scene.clear()  # not working for some reason
-                view.update()
+                #scene.clear()  # not working for some reason
+                #view.update()
 
 
 
-                #save_node(_const_parent_node, str(iter_count))
+                save_node(_const_parent_node, str(iter_count))
             continue
         skip_L_tri = False
         skip_S_tri = False
@@ -177,8 +182,8 @@ if __name__ == "__main__":
                         _piece_edge = _exampler_piece.getEdge(view, piece_edge_no)
                         _n_edge_len = _node_edge.length()
                         _p_edge_len = _piece_edge.length()
-                        is_original_edge = _parent_node.isOriginalPieceEdge(_parent_node.edge_owner[node_edge_no], exampler_pieces, _node_edge)
-                        is_combo_original_edge = _parent_node.isComboOfOriginalPieceEdge(_parent_node.edge_owner[node_edge_no], exampler_pieces, _node_edge)
+                        #is_original_edge = _parent_node.isOriginalPieceEdge(_parent_node.edge_owner[node_edge_no], exampler_pieces, _node_edge)
+                        #is_combo_original_edge = _parent_node.isComboOfOriginalPieceEdge(_parent_node.edge_owner[node_edge_no], exampler_pieces, _node_edge)
                         longer_piece_edge = (_p_edge_len > _n_edge_len)
                         if len(_parent_node.candidates) == 5:  # 若为第二块，加入剪枝
                             if round(_n_edge_len) != round(2 * _p_edge_len) and \
@@ -191,8 +196,8 @@ if __name__ == "__main__":
                         else:
                             _loop_count = 2
                         ## Debug:
-                        if _cand==6 and _exampler_piece.flipped and node_edge_no==2:
-                            _loop_count=1
+                        '''if _cand==6 and _exampler_piece.flipped and node_edge_no==2:
+                            _loop_count=1'''
                         ###
                         for i in range(_loop_count):
                             _node = deepcopy(_parent_node)
@@ -224,7 +229,7 @@ if __name__ == "__main__":
                             if node_angle >= 180:
                                 continue
                             if _piece.q_object.intersected(_node.q_object).length() == 0:  # 检查有无非法重叠
-                                _node.addPiece(_piece, longer_piece_edge, is_original_edge, node_edge_no + 1,
+                                _node.addPiece(_piece, longer_piece_edge, True, node_edge_no + 1,
                                                piece_edge_no + 1)  # addPiece会对piece做deepcopy，所以这里不需要
                                 #因为insert()输入的位置参数需要是当前位置的后一位，所以node_edge_no+1, 因为画图可知priece要从边向量终点添加，所以也+1
                                 _node.reduce(view, exampler_pieces, _cand)
@@ -241,7 +246,7 @@ if __name__ == "__main__":
                                     combo_dict[encoding] = 1  # 随便给键赋个值
                                 ### debug
 
-                                _node.paint(scene)
+                                '''_node.paint(scene)
                                 view.repaint()
                                 view.show()
                                 dieTime = QTime.currentTime().addMSecs(1)
@@ -249,7 +254,7 @@ if __name__ == "__main__":
                                     QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
                                 _node.clearPoly(scene)
                                 scene.clear()  # not working for some reason
-                                view.update()
+                                view.update()'''
 
                                 ###
                                 id+=1
