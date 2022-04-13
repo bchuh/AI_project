@@ -110,21 +110,22 @@ if __name__ == "__main__":
         print("#result: ", len(result_list))
         if len(candidates) == 0:
             # Debug
-            '''#view.show
-            scene.clear()
+            #view.show
+            '''scene.clear()
+            view.repaint()
             view.update()
             _const_parent_node.paint(scene)
             view.repaint()
-            dieTime = QTime.currentTime().addMSecs(10)
+            view.show()
+            dieTime = QTime.currentTime().addMSecs(50)
             while (QTime.currentTime() < dieTime):
                 QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
-            _const_parent_node.clearPoly(scene)
+            #_const_parent_node.clearPoly(scene)
             #scene.clear()  # not working for some reason
-            #view.update()'''
-
+            #view.update()
+'''
             #
             iter_count += 1  # 第几个组合
-
             if _const_parent_node.getEdgeCount() == 5:
                 result_list.append(_const_parent_node)
                 # Debug
@@ -134,17 +135,18 @@ if __name__ == "__main__":
                 view.update()
                 _const_parent_node.paint(scene)
                 view.repaint()
+                view.update()
                 encoding = _const_parent_node.encodeMatrix()
                 dieTime = QTime.currentTime().addMSecs(1)
                 while (QTime.currentTime() < dieTime):
                     QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
-                _const_parent_node.clearPoly(scene)
+                #_const_parent_node.clearPoly(scene)
                 #scene.clear()  # not working for some reason
                 #view.update()
 
 
 
-                save_node(_const_parent_node, str(iter_count))
+                #save_node(_const_parent_node, str(iter_count))
             continue
         skip_L_tri = False
         skip_S_tri = False
