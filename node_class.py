@@ -151,8 +151,8 @@ class Node(Poly):
         for item in self.pieces:
             _handle = scene.addPolygon(item.q_object)
             item.setBrush(_handle)
-            self.scene_item_handle = []
-            self.scene_item_handle.append(_handle)
+            #self.scene_item_handle = []
+            #self.scene_item_handle.append(_handle)
 
     def clearPoly(self, scene: QGraphicsScene):
         for i in self.scene_item_handle:
