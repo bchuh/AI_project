@@ -33,13 +33,13 @@ for dir in folder_dirs:
     view.show()
     view.setBackgroundBrush(Qt.gray)
     view.update()
-    dieTime = QTime.currentTime().addMSecs(800)
+    dieTime = QTime.currentTime().addMSecs(100)
     while (QTime.currentTime() < dieTime):
         QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
     _node.clearPoly(scene)
     scene.clear()  # not working for some reason
     view.update()
-    dieTime = QTime.currentTime().addMSecs(200)
+    dieTime = QTime.currentTime().addMSecs(5)
     while (QTime.currentTime() < dieTime):
         QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
     #view.hide()

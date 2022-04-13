@@ -388,10 +388,10 @@ class Node(Poly):
                         _S_done = False
             current = mat[5][(2*i):(2*(i+1))]
             if current[0]>max[0]:
-                max = (current[0], current[1], i)
+                max = (current[0], current[1], 2*i)
             elif current[0]==max[0]:
                 if current[1]>max[1]:
-                    max = (current[0], current[1], i)
+                    max = (current[0], current[1], 2*i)
         index = max[2]
         if index>0:
             mat[5] = np.concatenate((mat[5][index:8], mat[5][0:index]))
