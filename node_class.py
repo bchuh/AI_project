@@ -22,6 +22,7 @@ class Node(Poly):
         #self.edge_owner = [((0, 0), (0, 0))]  # 格式：（（边向量起点所属顶点），（边向量终点所属顶点））
         #self.matrix = np.zeros((7, 7), dtype=int)
         self.piece_matrix = np.ones((7, 8), dtype=int)
+        self.piece_angle = []
         #self.vertex_matrix = np.ones((7, 7, 2), dtype=int)
         self.parent_ID=0
         self.ID=0
@@ -400,6 +401,14 @@ class Node(Poly):
         if swap_S_tri:
             mat[[3, 4], :] = mat[[3, 4], :]
         return mat
+
+    def getAngle(self, view: QGraphicsView):
+        for _node_edge_count in range(0, self.getEdgeCount() - 1):
+            _current_edge = self.getEdge(view, _node_edge_count, True)
+            _next_edge = self.getEdge(view, (_node_edge_count + 1) % self.getEdgeCount(), True)
+            angle = _current_edge.angleTo(_next_edge)
+            self.piece_angle.append(angle)
+            return self.piece_angle
 
 
 
