@@ -416,12 +416,12 @@ class Node(Poly):
         return mat
 
     def getAngle(self, view: QGraphicsView):
-        for _node_edge_count in range(0, self.getEdgeCount() - 1):
+        for _node_edge_count in range(0, self.getEdgeCount()):
             _current_edge = self.getEdge(view, _node_edge_count, True)
             _next_edge = self.getEdge(view, (_node_edge_count + 1) % self.getEdgeCount(), True)
-            angle = _current_edge.angleTo(_next_edge)
+            _next_edge.setPoints(_next_edge.p2(),_next_edge.p1())
+            angle = _next_edge.angleTo(_current_edge)
             self.piece_angle.append(angle)
-            return self.piece_angle
 
 
 

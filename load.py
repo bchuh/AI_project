@@ -29,7 +29,7 @@ i=1
 for dir in folder_dirs:
     app.processEvents()
     if ".py" in dir:
-        continue
+       continue
     label.setText("<font size=300 color=white>"+str(i)+"</font>")
     _node: Node = load_node(dir, with_suffix_and_absolute_path=True)
     encoding = _node.encodeMatrix()
