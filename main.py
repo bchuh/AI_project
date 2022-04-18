@@ -106,8 +106,8 @@ if __name__ == "__main__":
         app.processEvents()
         _const_parent_node = stack.pop()
         candidates = _const_parent_node.candidates
-        print("Node expand:")
-        print("#result: ", len(result_list))
+        #print("Node expand:")
+        #print("#result: ", len(result_list))
         if len(candidates) == 0:
             # Debug
             #view.show
@@ -127,6 +127,7 @@ if __name__ == "__main__":
             #
             iter_count += 1  # 第几个组合
             if _const_parent_node.getEdgeCount() == 5:
+                print("#result: ", len(result_list))
                 result_list.append(_const_parent_node)
                 # Debug
                 #view.hide()

@@ -353,7 +353,7 @@ class Node(Poly):
         num = piece.number
         point1 = piece.q_object.at(0)
         point2 = piece.q_object.at(1)
-        if num != 5:
+        if num < 5:
             self.piece_matrix[num][0:4] = [point1.x(), point1.y(), point2.x(), point2.y()]
         else:
             for i in range(4):
@@ -363,6 +363,7 @@ class Node(Poly):
     def reorgPieceMat(self):
         mat = deepcopy(self.piece_matrix)
         max = (-1, -1, -1)
+        max_parall = (-1, -1, -1)
         swap_L_tri = False
         swap_S_tri = False
         _L_done = False
@@ -387,14 +388,26 @@ class Node(Poly):
                     elif mat[3][2*i+1] == mat[4][2*i+1]:
                         _S_done = False
             current = mat[5][(2*i):(2*(i+1))]
+            current_parall = mat[6][(2*i):(2*(i+1))]
             if current[0]>max[0]:
                 max = (current[0], current[1], 2*i)
             elif current[0]==max[0]:
                 if current[1]>max[1]:
                     max = (current[0], current[1], 2*i)
+
+            if current_parall[0]>max_parall[0]:
+                max_parall = (current_parall[0], current_parall[1], 2*i)
+            elif current_parall[0]==max_parall[0]:
+                if current_parall[1]>max_parall[1]:
+                    max_parall = (current_parall[0], current_parall[1], 2*i)
         index = max[2]
         if index>0:
             mat[5] = np.concatenate((mat[5][index:8], mat[5][0:index]))
+
+        index_parall = max_parall[2]
+        if index_parall>0:
+            mat[6] = np.concatenate((mat[6][index_parall:8], mat[6][0:index_parall]))
+
         if swap_L_tri:
             mat[[0, 1], :] = mat[[1, 0], :]
         if swap_S_tri:
