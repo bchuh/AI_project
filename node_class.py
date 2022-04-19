@@ -6,6 +6,7 @@ from abstract_poly import Poly
 from piece import Piece
 from copy import deepcopy
 import numpy as np
+import math
 
 
 class Node(Poly):
@@ -420,12 +421,15 @@ class Node(Poly):
         self.piece_angle = []
         self.node_edges = []
         for _node_edge_count in range(0, self.getEdgeCount()):
-            _current_edge = self.getEdge(view, _node_edge_count, True)
-            _next_edge = self.getEdge(view, (_node_edge_count + 1) % self.getEdgeCount(), True)
+            _current_edge = self.getEdge(None, _node_edge_count, True)
+            _next_edge = self.getEdge(None, (_node_edge_count + 1) % self.getEdgeCount(), True)
+            self.node_edges.append(
+                10 * round(_next_edge.length() / 10)
+            )
             _next_edge.setPoints(_next_edge.p2(),_next_edge.p1())
             angle = _next_edge.angleTo(_current_edge)
             self.piece_angle.append(angle)
-            self.node_edges.append(round(_next_edge.length()))
+
 
     def reorgAngles(self):
         angles = deepcopy(self.piece_angle)
