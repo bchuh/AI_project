@@ -57,4 +57,17 @@ for dir in folder_dirs:
     print(len(shape_dict))
 print("------Parsing complete---------")
 print("Found ", len(shape_dict), " types of shape!")
+print("------Showing all shapes---------")
+for key in shape_dict.keys():
+    app.processEvents()
+    _node = shape_dict[key][0]
+    _node.paint(scene)
+    view.show()
+    view.setBackgroundBrush(Qt.gray)
+    view.update()
+    dieTime = QTime.currentTime().addMSecs(100)
+    while (QTime.currentTime() < dieTime):
+        QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
+    scene.clear()
+    view.update()
 app.exec_()
