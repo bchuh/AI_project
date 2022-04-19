@@ -26,6 +26,7 @@ class Node(Poly):
         #self.vertex_matrix = np.ones((7, 7, 2), dtype=int)
         self.parent_ID=0
         self.ID=0
+        self.piece_angle=[]
     def addPiece(self, piece: Piece, longer_piece_edge: bool, is_original_edge :bool = True, into_idx: int = 0, from_idx: int = 0, i: int = 0):
         '''
         Add piece to node.
@@ -416,12 +417,57 @@ class Node(Poly):
         return mat
 
     def getAngle(self, view: QGraphicsView):
+        self.piece_angle = []
+        self.node_edges = []
         for _node_edge_count in range(0, self.getEdgeCount()):
             _current_edge = self.getEdge(view, _node_edge_count, True)
             _next_edge = self.getEdge(view, (_node_edge_count + 1) % self.getEdgeCount(), True)
             _next_edge.setPoints(_next_edge.p2(),_next_edge.p1())
             angle = _next_edge.angleTo(_current_edge)
             self.piece_angle.append(angle)
+            self.node_edges.append(round(_next_edge.length()))
+
+    def reorgAngles(self):
+        angles = deepcopy(self.piece_angle)
+        edges = deepcopy(self.node_edges)
+        if len(angles) !=5 or len(edges) != 5:
+            NotImplementedError()
+
+        deri_angles = []
+        for i in range(len(angles)):
+            deri_angles.append(angles[i]-angles[(i+1)%5])
+        max_index = np.argwhere(angles == np.amax(angles))
+        mix_index = np.argwhere(angles == np.amin(angles))
+        if len(max_index) == 1:
+            index = max_index[0]
+        elif len(mix_index) == 1:
+            index = mix_index[0]
+        else:
+            plain_index = np.argwhere(deri_angles == 0)
+            if len(plain_index) == 1:
+                index = plain_index[0]
+            else:
+                up_index = np.argwhere(deri_angles == np.amin(deri_angles))
+                if len(up_index) !=1:
+                    NotImplementedError()
+                index = up_index[0]
+        if len(index) != 1:
+            NotImplementedError()
+        else:
+            index = np.asscalar(index)
+        if index == 0:
+            result = angles
+            result_edges = edges
+        else:
+            result = angles[index:5] + angles[0:index]
+            result_edges = edges[index:5] + edges[0:index]
+        return result, result_edges
+
+    def encodeAngles(self, view):
+        self.getAngle(view)
+        angles, edges = self.reorgAngles()
+        return tuple([tuple(angles), tuple(edges)])
+
 
 
 
