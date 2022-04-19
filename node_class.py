@@ -288,7 +288,7 @@ class Node(Poly):
                 elif matrix[5][i]<1000:
                     scale=100
                 else:
-                    NotImplementedError()
+                    raise NotImplementedError()
                 matrix[5][i] = matrix[5][i] // scale
                 if first_square_edge == 0:
                     first_square_edge = matrix[5][i]
@@ -439,7 +439,7 @@ class Node(Poly):
             angles = angles[4:5] + angles[0:4]
             edges.reverse()
         if len(angles) !=5 or len(edges) != 5:
-            NotImplementedError()
+            raise NotImplementedError("condition: if len(angles) !=5 or len(edges) != 5")
 
         deri_angles = []
         for i in range(len(angles)):
@@ -457,10 +457,10 @@ class Node(Poly):
             else:
                 up_index = np.argwhere(deri_angles == np.amin(deri_angles))
                 if len(up_index) !=1:
-                    NotImplementedError()
+                    raise NotImplementedError()
                 index = up_index[0]
         if len(index) != 1:
-            NotImplementedError()
+            raise NotImplementedError()
         else:
             index = np.asscalar(index)
         if index == 0:
@@ -479,8 +479,6 @@ class Node(Poly):
         is_same_angle_list = True
         for i in range(len(angles)):
             if angles[i] == angles_reverse[i]:
-                if i==4:
-                    NotImplementedError()
                 continue
             elif angles[i]>angles_reverse[i]:
                 reversed_first = True
@@ -493,8 +491,6 @@ class Node(Poly):
         if is_same_angle_list:
             for i in range(len(edges)):
                 if edges[i] == edges_reverse[i]:
-                    if i == 4:
-                        NotImplementedError()
                     continue
                 elif edges[i] > edges_reverse[i]:
                     reversed_first = True

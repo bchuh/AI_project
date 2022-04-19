@@ -83,4 +83,4 @@ class Piece(Poly):
         elif shape == 4:
             item_handle.setBrush(Qt.cyan)
         else:
-            NotImplementedError()
+            raise NotImplementedError()
