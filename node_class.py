@@ -431,9 +431,13 @@ class Node(Poly):
             self.piece_angle.append(angle)
 
 
-    def reorgAngles(self):
+    def reorgAngles(self, do_reverse = False):
         angles = deepcopy(self.piece_angle)
         edges = deepcopy(self.node_edges)
+        if do_reverse:
+            angles.reverse()
+            angles = angles[4:5] + angles[0:4]
+            edges.reverse()
         if len(angles) !=5 or len(edges) != 5:
             NotImplementedError()
 
@@ -470,7 +474,38 @@ class Node(Poly):
     def encodeAngles(self, view):
         self.getAngle(view)
         angles, edges = self.reorgAngles()
-        return tuple([tuple(angles), tuple(edges)])
+        angles_reverse, edges_reverse = self.reorgAngles(do_reverse=True)
+        reversed_first = False
+        is_same_angle_list = True
+        for i in range(len(angles)):
+            if angles[i] == angles_reverse[i]:
+                if i==4:
+                    NotImplementedError()
+                continue
+            elif angles[i]>angles_reverse[i]:
+                reversed_first = True
+                is_same_angle_list = False
+                break
+            else:
+                reversed_first = False
+                is_same_angle_list = False
+                break
+        if is_same_angle_list:
+            for i in range(len(edges)):
+                if edges[i] == edges_reverse[i]:
+                    if i == 4:
+                        NotImplementedError()
+                    continue
+                elif edges[i] > edges_reverse[i]:
+                    reversed_first = True
+                    break
+                else:
+                    reversed_first = False
+                    break
+        if reversed_first:
+            return tuple([tuple(angles_reverse), tuple(edges_reverse)])
+        else:
+            return tuple([tuple(angles), tuple(edges)])
 
 
 

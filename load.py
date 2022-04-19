@@ -2,6 +2,7 @@ import os
 import pickle
 
 from PySide2.QtCore import QTime, QCoreApplication, QEventLoop, Qt
+from PySide2.QtGui import QImage, QPainter
 from PySide2.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QLabel, QVBoxLayout
 
 from node_class import Node
@@ -39,13 +40,15 @@ folder_dirs.reverse()
 #Debug:
 combo_dict = {}
 shape_dict = {}
-organize = True
+organize = False
 if organize:
     i=1
     for dir in folder_dirs:
         app.processEvents()
         if ".py" in dir:
            continue
+        if ".dict" in dir:
+            continue
         label.setText("<font size=300 color=white>"+str(i)+"</font>")
         _node: Node = load_node(dir, with_suffix_and_absolute_path=True)
         angles_encoding = _node.encodeAngles(view)
@@ -95,7 +98,7 @@ with open(_path, 'rb') as f:
 #########
 print("------Showing all shapes---------")
 
-_key = list(shape_dict.keys())[0]
+'''_key = list(shape_dict.keys())[0]
 for item in shape_dict[_key]:
     app.processEvents()
     _node = item
@@ -107,20 +110,35 @@ for item in shape_dict[_key]:
     while (QTime.currentTime() < dieTime):
         QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
     scene.clear()
-    view.update()
-'''for key in shape_dict.keys():
-    test_tup = (90.0, 90.0, 90.0)
+    view.update()'''
+i=1
+for key in shape_dict.keys():
+    '''test_tup = (90.0, 90.0, 90.0)
     if not x_in_y(test_tup,key[0]):
-        continue
+        continue'''
+
     app.processEvents()
     _node = shape_dict[key][0]
     _node.paint(scene)
     view.show()
     view.setBackgroundBrush(Qt.gray)
     view.update()
-    dieTime = QTime.currentTime().addMSecs(500)
+    #####
+    image = QImage(scene.sceneRect().width(), scene.sceneRect().height(), QImage.Format_RGB888)
+    painter = QPainter(image)
+    scene.render(painter, image.rect())
+    painter.end()
+    _path = os.getcwd()
+    _name = str(i)+'.jpg'
+    _folder = "images"
+    _path = os.path.join(_path, _folder)
+    _path = os.path.join(_path, _name)
+    image.save(_path)
+    #####
+    dieTime = QTime.currentTime().addMSecs(2)
     while (QTime.currentTime() < dieTime):
         QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
     scene.clear()
-    view.update()'''
+    view.update()
+    i+=1
 app.exec_()
