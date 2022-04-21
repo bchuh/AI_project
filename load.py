@@ -40,7 +40,7 @@ folder_dirs.reverse()
 #Debug:
 combo_dict = {}
 shape_dict = {}
-organize = False
+organize = True
 if organize:
     i=1
     for dir in folder_dirs:
@@ -74,9 +74,10 @@ if organize:
         print(angles_encoding)
         print(len(shape_dict))
     ###########
+    mode = "ASTAR"
     _path = os.getcwd()
     _name = 'shape.dict'
-    _folder = "nodes"
+    _folder = mode+"_nodes"
     _path = os.path.join(_path, _folder, _name)
     with open(_path, 'wb') as f:
         pickle.dump(shape_dict, f)
@@ -90,7 +91,7 @@ else:
 #########
 _path = os.getcwd()
 _name = 'shape.dict'
-_folder = "nodes"
+_folder = mode+"_nodes"
 _path = os.path.join(_path, _folder)
 _path = os.path.join(_path,  _name)
 with open(_path, 'rb') as f:

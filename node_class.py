@@ -423,8 +423,13 @@ class Node(Poly):
         for _node_edge_count in range(0, self.getEdgeCount()):
             _current_edge = self.getEdge(None, _node_edge_count, True)
             _next_edge = self.getEdge(None, (_node_edge_count + 1) % self.getEdgeCount(), True)
+            _upper = round(_next_edge.length())//10
+            _lower = round(_next_edge.length())%10
+            if _lower%2 !=0:
+                _lower += 1
+            _edge_len = _upper*10+_lower
             self.node_edges.append(
-                10 * round(_next_edge.length() / 10)
+                _edge_len
             )
             _next_edge.setPoints(_next_edge.p2(),_next_edge.p1())
             angle = _next_edge.angleTo(_current_edge)
@@ -451,13 +456,13 @@ class Node(Poly):
         elif len(mix_index) == 1:
             index = mix_index[0]
         else:
-            plain_index = np.argwhere(deri_angles == 0)
+            plain_index = np.argwhere(np.array(deri_angles) == 0.0)
             if len(plain_index) == 1:
                 index = plain_index[0]
             else:
                 up_index = np.argwhere(deri_angles == np.amin(deri_angles))
                 if len(up_index) !=1:
-                    raise NotImplementedError()
+                    raise NotImplementedError(angles)
                 index = up_index[0]
         if len(index) != 1:
             raise NotImplementedError()
@@ -502,6 +507,12 @@ class Node(Poly):
             return tuple([tuple(angles_reverse), tuple(edges_reverse)])
         else:
             return tuple([tuple(angles), tuple(edges)])
+
+    def getGScore(self):
+        return self.getEdgeCount()
+
+    def getHScore(self, factor=2):
+        return factor*len(self.candidates)
 
 
 
