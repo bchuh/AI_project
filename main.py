@@ -1,7 +1,7 @@
 import os
 
 from PySide2.QtCore import QPoint, QLineF, QPointF, QTime, QCoreApplication, QEventLoop, Qt
-from PySide2.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsScene
+from PySide2.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsScene, QVBoxLayout, QLabel
 from PySide2.QtGui import QPolygon, QTransform
 from node_class import Node
 from piece import Piece
@@ -303,6 +303,11 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
     if change_to_greedy:
         assert not change_to_UniCostSearch #两个change不能同时为true
     start = time.time()
+    label = QLabel()
+    layout = QVBoxLayout(view)
+    layout.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+    layout.addWidget(label)
+    label.show()
     prio_queue= PriorityQueue()
     iter_count = 0
     _node :Node = Node()
@@ -352,8 +357,9 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
             #
             iter_count += 1  # 第几个组合
             if _const_parent_node.getEdgeCount() == 5:
-                print("#result: ", len(result_list))
                 result_list.append(_const_parent_node)
+                print("#result: ", len(result_list))
+                label.setText("<font size=300 color=white>" + str(len(result_list)) + "</font>")
                 if (len(result_list)==1507):
                     break
                 # Debug
@@ -362,6 +368,7 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
                 scene.clear()
                 view.update()
                 _const_parent_node.paint(scene)
+                view.setBackgroundBrush(Qt.gray)
                 view.repaint()
                 view.update()
                 encoding = _const_parent_node.encodeMatrix()

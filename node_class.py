@@ -511,7 +511,7 @@ class Node(Poly):
     def getGScore(self):
         return self.getEdgeCount()
 
-    def getHScore(self, factor=2):
+    def getHScore(self, factor=-2):
         return factor*len(self.candidates)
 
 
