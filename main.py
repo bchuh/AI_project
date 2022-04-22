@@ -299,7 +299,7 @@ def BFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
                 change_to_BFS=False):
     DFSsequence(view, scene, result_list, shape_list, exampler_pieces, change_to_BFS=True)
 
-def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces: list, change_to_greedy = False, change_to_UniCostSearch = False):
+def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces: list, change_to_greedy = False, change_to_UniCostSearch = False, heuristic = "depth"):
     if change_to_greedy:
         assert not change_to_UniCostSearch #两个change不能同时为true
     start = time.time()
@@ -502,7 +502,12 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
                                     _debug_list.append(_debug_matrix[5][i])'''
                                 ####
                                 if change_to_greedy:
-                                    F_score=_node.getHScore()
+                                    if heuristic == "depth":
+                                        F_score = _node.getHScore()
+                                    elif heuristic == "edge":
+                                        F_score = abs(5-_node.getGScore())
+                                    else:
+                                        raise NotImplementedError()
                                 elif change_to_UniCostSearch:
                                     F_score = _node.getGScore()
                                 else:
@@ -512,8 +517,9 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
     end = time.time()
     print("The time of execution is :", (end - start) / 60 / 60, "hours")
 
-def GreedySequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces: list):
-    ASTARsequence(view, scene, result_list, shape_list, exampler_pieces, change_to_greedy=True)
+def GreedySequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces: list, heuristic):
+    assert heuristic in ["edge", "depth"]
+    ASTARsequence(view, scene, result_list, shape_list, exampler_pieces, change_to_greedy=True, heuristic = heuristic)
 def UniCostSearchSequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces: list):
     ASTARsequence(view, scene, result_list, shape_list, exampler_pieces, change_to_UniCostSearch=True)
 
