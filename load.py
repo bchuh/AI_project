@@ -35,7 +35,7 @@ layout.addWidget(label)
 label.show()
 view.showMaximized()
 nodes_dir = os.path.join(os.getcwd(), 'nodes')
-folder_dirs = glob.glob(nodes_dir + "\*")
+folder_dirs = glob.glob(nodes_dir + "/*")
 folder_dirs.reverse()
 #Debug:
 combo_dict = {}
