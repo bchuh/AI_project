@@ -692,6 +692,8 @@ class MainWindow(QMainWindow):
                 item = self.ui.typeLayout.takeAt(0)
                 item.widget().deleteLater()
             self.buttonList.clear()
+            self.widgetList.clear()
+            self.viewList.clear()
         self.ui.mainView.show()
         self.ui.mainView.update()
 
@@ -706,6 +708,7 @@ class MainWindow(QMainWindow):
         _path = os.getcwd()
         _name = 'shape.dict'
         _folder = self.mode + "_nodes"
+        print(_path, type(_path))
         _path = os.path.join(_path, _folder, _name)
         dictTest = open(_path, 'rb')
         dataTest = pickle.load(dictTest)
@@ -729,8 +732,6 @@ class MainWindow(QMainWindow):
 
     def addButton(self):
         self.countFile()
-        #button = QRadioButton("Choice", self.ui)
-        #self.buttonList = []
         row = 0
         num = (self.width // 250)
         for pId in range(self.count):
@@ -741,8 +742,12 @@ class MainWindow(QMainWindow):
             # 注意对象名称
             self.buttonList.append(QPushButton(str(pId + 1), self.ui))
             # button = QPushButton(str(pId + 1), self.ui)
-            path = './images' + '/' + str(pId + 1)
-            self.buttonList[pId].setStyleSheet("QPushButton{border-image: url(\"%s\"); color: white} QPushButton:hover{border: 10px double rgb(0, 0, 0);} QPushButton:pressed{background-color: border-image: url(./White.jpg)}" % path)
+            _path = os.getcwd()
+            if os.name == "nt":
+                imagePath = _path + "\\images\\" + str(pId + 1)
+            else:
+                imagePath = _path + "/images/" + str(pId + 1)
+            self.buttonList[pId].setStyleSheet("QPushButton{border-image: url(\"%s\"); color: white} QPushButton:hover{border: 10px double rgb(0, 0, 0);} QPushButton:pressed{background-color: border-image: url(./White.jpg)}" % imagePath)
             self.buttonList[pId].setFixedSize(QSize(200, 200))
             self.ui.typeLayout.addWidget(self.buttonList[pId], colume, row)
             self.buttonList[pId].clicked.connect(self.showComb)
@@ -766,15 +771,23 @@ class MainWindow(QMainWindow):
             # self.viewList[vId].setFixedSize(100, 100)
 
     def addWidget(self):
+        while self.ui.combLayout.count():
+            item = self.ui.combLayout.takeAt(0)
+            item.widget().deleteLater()
+        self.widgetList.clear()
+        self.widgetList.clear()
+        self.viewList.clear()
+        scaleFactor = 0.4
         for wId in range(len(self.viewNum)):
             self.widgetList[wId] = QWidget(self.ui.scrollAreaWidgetContents_2)
-            # TODO 调整大小
-            self.widgetList[wId].setFixedSize(QSize(600, 600))
+            self.widgetList[wId].setFixedSize(QSize(1200, 1200))
             self.viewList.append(QGraphicsScene(self.widgetList[wId]))
+            self.viewList[wId].setSceneRect(-600, -600, 1200, 1200)
             objName = "V" + str(wId)
             self.viewList[wId].setObjectName(objName)
             self.viewNum[wId].paint(self.viewList[wId])
             self.subviewList[wId] = QGraphicsView(self.widgetList[wId])
+            self.subviewList[wId].scale(scaleFactor, scaleFactor)
             self.subviewList[wId].setScene(self.viewList[wId])
             self.ui.combLayout.addWidget(self.widgetList[wId])
 
