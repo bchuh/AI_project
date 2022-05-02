@@ -162,7 +162,7 @@ class Node(Poly):
             scene.removeItem(i)
             self.scene_item_handle.pop()
 
-    def reduce(self, view: QGraphicsView, exampler_pieces: list, last_cand :int):
+    def reduce(self, view: QGraphicsView, exampler_pieces: list = None, last_cand :int = None):
         _node_edge_count = self.getEdgeCount() - 1
         while _node_edge_count >= 0:
             _current_edge = self.getEdge(view, _node_edge_count)
@@ -173,72 +173,13 @@ class Node(Poly):
                 self.q_object.remove(_node_edge_count)
 
                 if angle == 180:
-                    '''
-                    connect = False
-                    connect_full = False
-                    if self.hasSameVertix(self.edge_owner[_node_edge_count]) and \
-                        self.hasSameVertix(self.edge_owner[_node_edge_count-1]):
-                        if self.isOriginalPieceEdge(self.edge_owner[_node_edge_count], exampler_pieces, _current_edge) and \
-                            self.isOriginalPieceEdge(self.edge_owner[_node_edge_count-1], exampler_pieces, _previous_edge):
-                            connect = True
-                    elif self.isEqualOriginalPieceEdge(self.edge_owner[_node_edge_count][0], exampler_pieces, _previous_edge) or \
-                            self.isEqualOriginalPieceEdge(self.edge_owner[_node_edge_count-1][1], exampler_pieces,
-                                                          _current_edge):
-                            connect_full = True
-
-                    _N_info1 = self.edge_owner[_node_edge_count][-1]
-                    _N_info2 = self.edge_owner[_node_edge_count-1][0]  # 可能会有[-1]，不过python问题不大
-                    if connect:
-                        self.vertex_matrix[_N_info1[0]][_N_info2[0]] = [connection_point.x(), connection_point.y()]
-                        self.vertex_matrix[_N_info2[0]][_N_info1[0]] = [connection_point.x(), connection_point.y()]
-                        self.matrix[_N_info1[0]][_N_info2[0]] = _N_info1[1]
-                        self.matrix[_N_info2[0]][_N_info1[0]] = _N_info2[1]
-                    if connect_full:  # 短边和长边一部分上的图形全连接
-                        _N_info1 = self.edge_owner[_node_edge_count][0]
-                        _N_info2 = self.edge_owner[_node_edge_count - 1][-1]
-                        self.vertex_matrix[_N_info1[0]][_N_info2[0]] = [1,1]
-                        self.vertex_matrix[_N_info2[0]][_N_info1[0]] = [1,1]
-                        self.matrix[_N_info1[0]][_N_info2[0]] = 100*_N_info1[1]
-                        self.matrix[_N_info2[0]][_N_info1[0]] = 100*_N_info2[1]'''
-
-
                     _prev_temp=(_node_edge_count-1)%self.getEdgeCount()
                     if self.q_object.at(
                             _prev_temp
                     )==self.q_object.at(_node_edge_count):
-                        '''
-                        _N_info1 = self.edge_owner[_node_edge_count][-1]
-                        _N_info2 = self.edge_owner[_node_edge_count - 1][0]  # 可能会有[-1]，不过python问题不大
-                        connection_point = self.q_object.at(_prev_temp)
-                        self.vertex_matrix[_N_info1[0]][_N_info2[0]] = [connection_point.x(), connection_point.y()]
-                        self.vertex_matrix[_N_info2[0]][_N_info1[0]] = [connection_point.x(), connection_point.y()]
-                        if connect:
-                            a = 100  #用100重新标
-                            self.vertex_matrix[_N_info1[0]][_N_info2[0]] = [0, 0]
-                            self.vertex_matrix[_N_info2[0]][_N_info1[0]] = [0, 0]
-                        else:
-                            a = 1
-                        self.matrix[_N_info1[0]][_N_info2[0]] = a * _N_info1[1]
-                        self.matrix[_N_info2[0]][_N_info1[0]] = a * _N_info2[1]
-                        '''
                         self.q_object.remove(_prev_temp)
-                        '''
-                        self.edge_owner.pop(_node_edge_count)
-                        self.edge_owner.pop(_prev_temp)
-                        '''
                         _node_edge_count-=1
                         continue
-                    '''elif _current_edge.length() > _previous_edge.length():
-                        _num, _edge = self.edge_owner[_node_edge_count][-1]
-                        self.edge_owner[_node_edge_count - 1] = ((_num, _edge), (_num, _edge))
-                        self.edge_owner.pop(_node_edge_count)
-                        _node_edge_count-=1
-                        continue'''
-                '''_num, _edge = self.edge_owner[_node_edge_count][-1]
-                _prev_num, _prev_old = self.edge_owner[_node_edge_count - 1][0]
-                self.edge_owner[_node_edge_count - 1] = ((_prev_num, _prev_old), (_num, _edge))
-                self.edge_owner.pop(_node_edge_count)'''
-
             _node_edge_count -= 1
 
     def encodeMatrix(self):
@@ -414,7 +355,7 @@ class Node(Poly):
         if swap_L_tri:
             mat[[0, 1], :] = mat[[1, 0], :]
         if swap_S_tri:
-            mat[[3, 4], :] = mat[[3, 4], :]
+            mat[[3, 4], :] = mat[[4, 3], :]
         return mat
 
     def getAngle(self, view: QGraphicsView):
