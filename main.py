@@ -95,11 +95,13 @@ def pauseWait():
     print("pauseWait")
 
 @Slot()
-def estimateProgress(statrEstimate: float, endEstimate: float, timeCost: list, listNum: int):
+def estimateProgress(statrEstimate: int, endEstimate: int, timeCost: list, listNum: int):
     """估计 进度"""
     timeCost.append(endEstimate - statrEstimate)
     timeAverage = mean(timeCost)
-    totalCost = timeAverage * (1507 - listNum)
+    #totalCost = timeAverage * (1507 - listNum)
+    totalCost = (timeAverage * (3800000 - listNum)) // 1000
+    print(timeCost)
     timeRemain = totalCost / 60 / 60
     if endEstimate == 0:
         print("Estimating, Waiting for the first node")
@@ -107,11 +109,6 @@ def estimateProgress(statrEstimate: float, endEstimate: float, timeCost: list, l
     print(statrEstimate)
     print(timeRemain, "hours")
     return timeRemain
-
-@Slot()
-def getProgress(value: int):
-    print(" ")
-    return value
 
 
 def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces :list, loadUi: QMainWindow, change_to_BFS=False):
@@ -134,7 +131,8 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
     timeCost = []
     progressSi = MySignal()
     timeSi = MySignal()
-    endEstimate.append(start)
+    j = 1
+    endEstimate.append(int(start))
     _node = Node()
     _node.addPiece(
         Piece(shape_list[_node.candidates.pop(2)], 2),
@@ -153,18 +151,20 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
         candidates = _const_parent_node.candidates
 
         #-----Debug------------
-        # scene.clear()
-        # view.update()
-        # _const_parent_node.paint(scene)
-        # view.repaint()
-        # # view.show()
-        # dieTime = QTime.currentTime().addMSecs(50)
-        # while (QTime.currentTime() < dieTime):
-        #     QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
-
+        if loadUi.ui.checkBox.isChecked() == True:
+            scene.clear()
+            view.update()
+            _const_parent_node.paint(scene)
+            view.repaint()
+            # view.show()
+            # dieTime = QTime.currentTime().addMSecs(50)
+            # while (QTime.currentTime() < dieTime):
+            #     QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
+        else:
+            scene.clear()
         #------------------------------------
-        #print("Node expand:")
-        #print("#result: ", len(result_list))
+        # print("Node expand:")
+        # print("#result: ", len(result_list))
         # temp = []
         # temp.append(len(result_list))
         # if temp.pop == temp[-1]:
@@ -190,21 +190,16 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
 '''
             #
             iter_count += 1  # 第几个组合
-            progressSi.signal.connect(loadUi.setProgressBar)
-            progressSi.signal.emit(iter_count)
             if _const_parent_node.getEdgeCount() == 5:
                 print("#result: ", len(result_list))
                 result_list.append(_const_parent_node)
-                nodeEstimate = time.time()
-                endEstimate.append(nodeEstimate)
-                # estimateProgress(endEstimate[-2], endEstimate[-1], timeCost)
-                temp = estimateProgress(endEstimate[-2], endEstimate[-1], timeCost, len(result_list))
-                # getProgress(len(result_list))
-                # progressSi.signal.connect(loadUi.setProgressBar)
-                # progressSi.signal.emit(len(result_list))
-                timeSi.signal.connect(loadUi.setTimecounter)
-                timeSi.signal.emit(temp)
 
+                # nodeEstimate = time.time()
+                # endEstimate.append(int(nodeEstimate))
+                # # estimateProgress(endEstimate[-2], endEstimate[-1], timeCost)
+                # temp = estimateProgress(endEstimate[-2], endEstimate[-1], timeCost, len(result_list))
+                # timeSi.signal.connect(loadUi.setTimecounter)
+                # timeSi.signal.emit(temp)
 
                 # timeSi.signal.connect(setProgressBar)
                 # Debug
@@ -223,8 +218,6 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
                 # _const_parent_node.clearPoly(scene)
                 # scene.clear()  # not working for some reason
                 # view.update()
-
-                #
             continue
         skip_L_tri = False
         skip_S_tri = False
@@ -337,7 +330,16 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
 
                                 ###
                                 id += 1
+                                progressSi.signal.connect(loadUi.setProgressBar)
+                                progressSi.signal.emit(id)
                                 _node.ID = id
+                                if (id // (1000 * j)):
+                                    nodeEstimate = time.time()
+                                    endEstimate.append(int(nodeEstimate))
+                                    temp = estimateProgress(endEstimate[-2], endEstimate[-1], timeCost, id)
+                                    timeSi.signal.connect(loadUi.setTimecounter)
+                                    timeSi.signal.emit(temp)
+                                    j += 1
                                 #### debug 2
                                 '''_debug_matrix=_node.matrix
                                 _debug_list=[]
@@ -349,18 +351,26 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
                                 if len(_node.candidates) == 0 and _node.getEdgeCount() == 5:
                                     print('stop')
                                 stack.append(_node)
+
+        # if loadUi.isCancel == 1:
+        #     break
     end = time.time()
     print("The time of execution is :", (end - start) / 60 / 60, "hours")
 
 #BFS
-def BFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces: list, loadUi: QMainWindow,
-                change_to_BFS=False):
+def BFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces: list, loadUi: QMainWindow, change_to_BFS=False):
     DFSsequence(view, scene, result_list, shape_list, exampler_pieces, loadUi, change_to_BFS=True)
 #ASTAR
-def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces: list, change_to_greedy = False, change_to_UniCostSearch = False, heuristic = "depth"):
+def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces: list, loadUi: QMainWindow, change_to_greedy = False, change_to_UniCostSearch = False, heuristic = "depth"):
     if change_to_greedy:
         assert not change_to_UniCostSearch #两个change不能同时为true
+    endEstimate = []
+    timeCost = []
+    timeCost2 = []
+    progressSi = MySignal()
+    timeSi = MySignal()
     start = time.time()
+    endEstimate.append(start)
     label = QLabel()
     layout = QVBoxLayout(view)
     layout.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
@@ -414,6 +424,9 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
 '''
             #
             iter_count += 1  # 第几个组合
+            timeCost2 = []
+            progressSi.signal.connect(loadUi.setProgressBar)
+            progressSi.signal.emit(iter_count)
             if _const_parent_node.getEdgeCount() == 5:
                 result_list.append(_const_parent_node)
                 print("#result: ", len(result_list))
@@ -433,6 +446,12 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
                 dieTime = QTime.currentTime().addMSecs(1)
                 while (QTime.currentTime() < dieTime):
                     QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
+
+                # nodeEstimate = time.time()
+                # endEstimate.append(nodeEstimate)
+                # temp = estimateProgress(endEstimate[-2], endEstimate[-1], timeCost, len(result_list))
+                # timeSi.signal.connect(loadUi.setTimecounter)
+                # timeSi.signal.emit(temp)
                 # _const_parent_node.clearPoly(scene)
                 # scene.clear()  # not working for some reason
                 # view.update()
@@ -571,14 +590,20 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
                                     F_score=_node.getGScore()+_node.getHScore()
                                 prio_queue.put(PrioritizedItem(F_score, _node))
 
+        nodeEstimate = time.time()
+        endEstimate.append(nodeEstimate)
+        temp = estimateProgress(endEstimate[-2], endEstimate[-1], timeCost2, len(result_list))
+        timeSi.signal.connect(loadUi.setTimecounter)
+        timeSi.signal.emit(temp)
+
     end = time.time()
     print("The time of execution is :", (end - start) / 60 / 60, "hours")
 
-def GreedySequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces: list, heuristic):
+def GreedySequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces: list, loadUi: QMainWindow, heuristic):
     assert heuristic in ["edge", "depth"]
-    ASTARsequence(view, scene, result_list, shape_list, exampler_pieces, change_to_greedy=True, heuristic = heuristic)
-def UniCostSearchSequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces: list):
-    ASTARsequence(view, scene, result_list, shape_list, exampler_pieces, change_to_UniCostSearch=True)
+    ASTARsequence(view, scene, result_list, shape_list, exampler_pieces, loadUi, change_to_greedy=True, heuristic = heuristic)
+def UniCostSearchSequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces: list, loadUi: QMainWindow):
+    ASTARsequence(view, scene, result_list, shape_list, exampler_pieces, loadUi, change_to_UniCostSearch=True)
 
 class MainWindow(QMainWindow):
 
@@ -595,31 +620,31 @@ class MainWindow(QMainWindow):
         self.ui.lineEdit.setPlaceholderText("DFS Mode")
         self.ui.lineEdit.setReadOnly(True)
         scale_factor = 1
-        #self.ui.mainView = QGraphicsView(self.ui.scrollAreaWidgetContents)
         self.scene = QGraphicsScene(self.ui.scrollAreaWidgetContents)
         self.ui.mainView.setScene(self.scene)
         self.ui.mainView.scale(scale_factor, scale_factor)
         self.ui.combArea.hide()
-        self.mode = "DFS"
         self.ui.OK.clicked.connect(self.SetUi)
-        self.ui.OK.clicked.connect(pauseWait)
+        #self.ui.OK.clicked.connect(pauseWait)
         self.ui.CANCEL.clicked.connect(self.cancelClick)
         self.ui.SHOW.clicked.connect(self.showClick)
         self.ui.SHOW.clicked.connect(self.addButton)
         self.ui.SHOW.clicked.connect(self.countFile)
         self.ui.progressBar.setValue(0)
         self.ui.progressBar.setRange(0, 3800000)
-        #self.ui.progressBar.setRange(0, 1507)
         self.ui.timeCounter.setText("Over 12 hours")
         self.buttonList = []
         self.viewList =[]
         self.subviewList = {}  # QGraphicsView(self.ui.scrollAreaWidgetContents_2)
         self.widgetList = {}
+        self.isCancel = 0
         self.count = 0
         self.viewNum = 0
         self.path = r"./images"
+        self.mode = "DFS"
 
     def SetUi(self):
+        self.isCancel = 0
         self.ui.comboBox.currentIndexChanged.connect(self.handleSelectionChange)
         result_list = []
         shape_list = [0, 0, 1, 2, 2, 3, 4]  # shape ID of 7 pieces
@@ -629,37 +654,34 @@ class MainWindow(QMainWindow):
             exampler_pieces.append(Piece(shape_list[i], i, view=self.ui.mainView))
         #mode = "DFS"
         assert self.mode in ["DFS", "BFS", "ASTAR", "GREEDY", "UCS"]
-
+        print(self.mode)
         if self.mode == "DFS":
             self.ui.lineEdit.setPlaceholderText("DFS Mode")
             DFSsequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
-            self.ui.comboBox.setEnabled(False)
+            self.ui.lineEdit.setPlaceholderText("cancle")
             # DFSsequence(view, scene, result_list, shape_list, exampler_pieces)
             # DFS 逻辑序列集
         elif self.mode == "BFS":
             self.ui.lineEdit.setPlaceholderText("BFS Mode")
-            self.ui.comboBox.setEnabled(False)
-            BFSsequence(self.ui.graphicsView, self.scene, result_list, shape_list, exampler_pieces, self)
+            BFSsequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
             # BFSsequence(view, scene, result_list, shape_list, exampler_pieces)
         elif self.mode == "ASTAR":
             self.ui.lineEdit.setPlaceholderText("ASTAR Mode")
-            self.ui.comboBox.setEnabled(False)
-            ASTARsequence(self.ui.graphicsView, self.scene, result_list, shape_list, exampler_pieces, self)
+            ASTARsequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
             # ASTARsequence(view, scene, result_list, shape_list, exampler_pieces)
         elif self.mode == "GREEDY":
             self.ui.lineEdit.setPlaceholderText("GREEDY Mode")
-            GreedySequence(self.ui.graphicsView, self.scene, result_list, shape_list, exampler_pieces)
+            GreedySequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces)
             # GreedySequence(view, scene, result_list, shape_list, exampler_pieces)
         elif self.mode == "UCS":
             self.ui.lineEdit.setPlaceholderText("UCS Mode")
-            self.ui.comboBox.setEnabled(False)
-            UniCostSearchSequence(self.ui.graphicsView, self.scene, result_list, shape_list, exampler_pieces)
+            UniCostSearchSequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces)
             # UniCostSearchSequence(view, scene, result_list, shape_list, exampler_pieces)
         else:
             raise NotImplementedError()
 
         end = time.time()
-        info = str(self.mode) + " Mode\n\n" + str(len(result_list)) + " combination found!\n" + "Stored combinations: " + str(len(combo_dict)) + "\nThe time of execution is : " + str((end - start) / 60 / 60) + "hours" + "\nsaving all the nodes...\n"
+        info = str(len(result_list)) + " combination found!\n" + "Stored combinations: " + str(len(combo_dict)) + "\nThe time of execution is : " + str((end - start) / 60 / 60) + "hours" + "\nsaving all the nodes...\n"
 
 
         print(len(result_list), "combination found!")
@@ -681,10 +703,14 @@ class MainWindow(QMainWindow):
 
 
     def okClick(self):
+        self.isCancel = 0
+        self.ui.comboBox.setEnabled(False)
         print("OK")
         self.ui.mainView.show()
 
+
     def cancelClick(self):
+        # self.isCancel = 1
         self.ui.comboBox.setEnabled(True)
         self.ui.combArea.hide()
         if len(self.buttonList) != 0:
@@ -744,7 +770,7 @@ class MainWindow(QMainWindow):
             # button = QPushButton(str(pId + 1), self.ui)
             _path = os.getcwd()
             if os.name == "nt":
-                imagePath = _path + "\\images\\" + str(pId + 1)
+                imagePath = _path + "/images/" + str(pId + 1)
             else:
                 imagePath = _path + "/images/" + str(pId + 1)
             self.buttonList[pId].setStyleSheet("QPushButton{border-image: url(\"%s\"); color: white} QPushButton:hover{border: 10px double rgb(0, 0, 0);} QPushButton:pressed{background-color: border-image: url(./White.jpg)}" % imagePath)
@@ -777,12 +803,15 @@ class MainWindow(QMainWindow):
         self.widgetList.clear()
         self.widgetList.clear()
         self.viewList.clear()
-        scaleFactor = 0.4
+        scaleFactor = 0.7
         for wId in range(len(self.viewNum)):
             self.widgetList[wId] = QWidget(self.ui.scrollAreaWidgetContents_2)
             self.widgetList[wId].setFixedSize(QSize(1200, 1200))
             self.viewList.append(QGraphicsScene(self.widgetList[wId]))
-            self.viewList[wId].setSceneRect(-600, -600, 1200, 1200)
+            center = self.viewList[wId].sceneRect().center()
+            self.viewList[wId].setSceneRect(-(center.x()/2), -(center.y()/2), center.x(), center.y())
+            #self.viewList[wId].setSceneRect(center.x(), center.y(), 1200, 1200)
+            #self.viewList[wId].setSceneRect(-600, -600, 1200, 1200)
             objName = "V" + str(wId)
             self.viewList[wId].setObjectName(objName)
             self.viewNum[wId].paint(self.viewList[wId])
@@ -790,8 +819,6 @@ class MainWindow(QMainWindow):
             self.subviewList[wId].scale(scaleFactor, scaleFactor)
             self.subviewList[wId].setScene(self.viewList[wId])
             self.ui.combLayout.addWidget(self.widgetList[wId])
-
-
 
     def countFile(self):
         self.count = len(os.listdir(self.path))
