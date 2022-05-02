@@ -4,10 +4,10 @@ from PySide2.QtWidgets import QGraphicsScene, QGraphicsView
 
 from abstract_poly import Poly
 from piece import Piece
-from copy import deepcopy
 import numpy as np
+import pickle
 import math
-
+from copy import deepcopy
 
 class Node(Poly):
     '''
@@ -93,7 +93,7 @@ class Node(Poly):
 
         '''if _node_edge_count == 1:
             self.edge_owner.pop()  # 初始化时的0,0搞不掉，只能手动pop了'''
-        self.pieces.append(deepcopy(piece))
+        self.pieces.append(pickle.loads(pickle.dumps(piece)))
 
     def updateMatrix(self, piece: Piece, into_idx: int, from_idx: int,
                      connect_head: bool, connect_tail: bool, is_original_edge :bool, has_same_vertex :bool, i,  initialize=False, piece_filpped=False):
@@ -246,9 +246,9 @@ class Node(Poly):
         mat = self.reorgPieceMat()
         return tuple([tuple(e) for e in mat])
 
-    def reorganizeMatrix(self):
-        matrix = deepcopy(self.matrix)
-        vertex_matrix = deepcopy(self.vertex_matrix)
+    def reorganizeMatrix(self):#函数暂时没用
+        matrix = pickle.load(pickle.dump(self.matrix))
+        vertex_matrix = pickle.load(pickle.dump(self.vertex_matrix))
         swap_L_tri = False
         swap_S_tri = False
         _L_done = False
@@ -364,7 +364,7 @@ class Node(Poly):
                 self.piece_matrix[num][(2*i):(2*(i+1))] = [point.x(), point.y()]
 
     def reorgPieceMat(self):
-        mat = deepcopy(self.piece_matrix)
+        mat = pickle.loads(pickle.dumps(self.piece_matrix))
         max = (-1, -1, -1)
         max_parall = (-1, -1, -1)
         swap_L_tri = False
@@ -437,8 +437,8 @@ class Node(Poly):
 
 
     def reorgAngles(self, do_reverse = False):
-        angles = deepcopy(self.piece_angle)
-        edges = deepcopy(self.node_edges)
+        angles = pickle.loads(pickle.dumps(self.piece_angle))
+        edges = pickle.loads(pickle.dumps(self.node_edges))
         if do_reverse:
             angles.reverse()
             angles = angles[4:5] + angles[0:4]

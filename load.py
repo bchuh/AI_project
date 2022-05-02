@@ -1,5 +1,7 @@
 import os
 import pickle
+import sys
+import time
 
 from PySide2.QtCore import QTime, QCoreApplication, QEventLoop, Qt
 from PySide2.QtGui import QImage, QPainter
@@ -34,13 +36,14 @@ layout.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
 layout.addWidget(label)
 label.show()
 view.showMaximized()
-nodes_dir = os.path.join(os.getcwd(), 'nodes')
+mode = "BFS"
+nodes_dir = os.path.join(os.getcwd(), mode+'_nodes')
 folder_dirs = glob.glob(nodes_dir + "\*")
 folder_dirs.reverse()
 #Debug:
 combo_dict = {}
 shape_dict = {}
-organize = True
+organize = False
 if organize:
     i=1
     for dir in folder_dirs:
@@ -74,7 +77,6 @@ if organize:
         print(angles_encoding)
         print(len(shape_dict))
     ###########
-    mode = "ASTAR"
     _path = os.getcwd()
     _name = 'shape.dict'
     _folder = mode+"_nodes"
@@ -90,12 +92,18 @@ else:
 
 #########
 _path = os.getcwd()
+_dfspath = os.getcwd()
 _name = 'shape.dict'
 _folder = mode+"_nodes"
+_dfsfolder = "DFS_nodes"
 _path = os.path.join(_path, _folder)
 _path = os.path.join(_path,  _name)
+_dfspath = os.path.join(_dfspath, _dfsfolder)
+_dfspath = os.path.join(_dfspath,  _name)
 with open(_path, 'rb') as f:
     shape_dict = pickle.load(f)
+with open(_dfspath, 'rb') as k:
+    combo_dict = pickle.load(k)
 #########
 print("------Showing all shapes---------")
 
@@ -112,6 +120,30 @@ for item in shape_dict[_key]:
         QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
     scene.clear()
     view.update()'''
+m = 1
+for key in shape_dict.keys():
+    m += 1
+    if key not in combo_dict.keys():
+        print(m)
+        print(key)
+        app.processEvents()
+        _node = shape_dict[key][0]
+        _node.paint(scene)
+        view.show()
+        view.setBackgroundBrush(Qt.gray)
+        view.update()
+        #####
+        image = QImage(scene.sceneRect().width(), scene.sceneRect().height(), QImage.Format_RGB888)
+        painter = QPainter(image)
+        scene.render(painter, image.rect())
+        painter.end()
+        dieTime = QTime.currentTime().addMSecs(2000)
+        while (QTime.currentTime() < dieTime):
+            QCoreApplication.processEvents(QEventLoop.AllEvents, 50)
+        scene.clear()
+        view.update()
+        time.sleep(3)
+
 i=1
 for key in shape_dict.keys():
     '''test_tup = (90.0, 90.0, 90.0)
@@ -142,4 +174,5 @@ for key in shape_dict.keys():
     scene.clear()
     view.update()
     i+=1
+exit(0)
 app.exec_()

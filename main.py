@@ -117,7 +117,7 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
         candidates = _const_parent_node.candidates
 
         #-----Debug------------
-        scene.clear()
+        '''scene.clear()
         view.update()
         _const_parent_node.paint(scene)
         view.repaint()
@@ -125,7 +125,7 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
         dieTime = QTime.currentTime().addMSecs(50)
         while (QTime.currentTime() < dieTime):
             QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
-
+        '''
         #------------------------------------
         # print("Node expand:")
         # print("#result: ", len(result_list))
@@ -151,7 +151,7 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
                 print("#result: ", len(result_list))
                 result_list.append(_const_parent_node)
                 # Debug
-                # view.hide()
+                '''# view.hide()
                 # view.show()
                 scene.clear()
                 view.update()
@@ -166,14 +166,14 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
                 # scene.clear()  # not working for some reason
                 # view.update()
 
-                #
+                #'''
             continue
         skip_L_tri = False
         skip_S_tri = False
         for cand_no in range(len(candidates)):  # debug
             # print("Len(candidates):", len(candidates))
             # 开始创建新的子节点， 不需要深拷贝因为这是父节点
-            _parent_node = deepcopy(_const_parent_node)
+            _parent_node = pickle.loads(pickle.dumps(_const_parent_node))
             _cand = _parent_node.candidates.pop(cand_no)  # _cand是指第几号拼图，是shape_list的某个位置下标
             _exampler_piece = Piece(shape_list[_cand], _cand)  # piece样品，跟本次迭代中创建的piece一模一样，只是为了方便查看形状的边长而存在
             if shape_list[_cand] == 0 and skip_L_tri:
@@ -222,8 +222,8 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
                             _loop_count=1'''
                         ###
                         for i in range(_loop_count):
-                            _node = deepcopy(_parent_node)
-                            _piece = deepcopy(_exampler_piece)  # create a new one instead of sharing
+                            _node = pickle.loads(pickle.dumps(_parent_node))
+                            _piece = pickle.loads(pickle.dumps(_exampler_piece))  # create a new one instead of sharing
                             _node.parent_ID = _parent_node.ID
                             _node_edge = _node.getEdge(view, node_edge_no, True)
                             _piece_edge = _piece.getEdge(view, piece_edge_no)
@@ -307,7 +307,7 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
     layout = QVBoxLayout(view)
     layout.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
     layout.addWidget(label)
-    label.show()
+    #label.show()
     prio_queue= PriorityQueue()
     iter_count = 0
     _node :Node = Node()
@@ -325,7 +325,7 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
         candidates = _const_parent_node.candidates
 
         # -----Debug------------
-        print("priority: ", temp_p_item.priority)
+        #print("priority: ", temp_p_item.priority)
         '''scene.clear()
         view.update()
         _const_parent_node.paint(scene)
@@ -363,7 +363,7 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
                 if (len(result_list)==1507):
                     break
                 # Debug
-                # view.hide()
+                '''# view.hide()
                 # view.show()
                 scene.clear()
                 view.update()
@@ -379,14 +379,14 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
                 # scene.clear()  # not working for some reason
                 # view.update()
 
-                #
+                #'''
             continue
         skip_L_tri = False
         skip_S_tri = False
         for cand_no in range(len(candidates)):  # debug
             # print("Len(candidates):", len(candidates))
             # 开始创建新的子节点， 不需要深拷贝因为这是父节点
-            _parent_node = deepcopy(_const_parent_node)
+            _parent_node = pickle.loads(pickle.dumps(_const_parent_node))
             _cand = _parent_node.candidates.pop(cand_no)  # _cand是指第几号拼图，是shape_list的某个位置下标
             _exampler_piece = Piece(shape_list[_cand], _cand)  # piece样品，跟本次迭代中创建的piece一模一样，只是为了方便查看形状的边长而存在
             if shape_list[_cand] == 0 and skip_L_tri:
@@ -435,8 +435,8 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
                             _loop_count=1'''
                         ###
                         for i in range(_loop_count):
-                            _node = deepcopy(_parent_node)
-                            _piece = deepcopy(_exampler_piece)  # create a new one instead of sharing
+                            _node = pickle.loads(pickle.dumps(_parent_node))
+                            _piece = pickle.loads(pickle.dumps(_exampler_piece))  # create a new one instead of sharing
                             _node.parent_ID = _parent_node.ID
                             _node_edge = _node.getEdge(view, node_edge_no, True)
                             _piece_edge = _piece.getEdge(view, piece_edge_no)
@@ -515,7 +515,7 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
                                 prio_queue.put(PrioritizedItem(F_score, _node))
 
     end = time.time()
-    print("The time of execution is :", (end - start) / 60 / 60, "hours")
+    print("The time of execution is :", (end - start) / 60 / 6, "hours")
 
 def GreedySequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces: list, heuristic):
     assert heuristic in ["edge", "depth"]
@@ -529,8 +529,8 @@ if __name__ == "__main__":
     view = QGraphicsView()
     scene = QGraphicsScene()
     view.setScene(scene)
-    view.show()
-    view.showMaximized()
+    #view.show()
+    #view.showMaximized()
     combo_dict = {}  #记录所有组合的dict
     scale_factor = 1
     view.scale(scale_factor, scale_factor)
@@ -540,7 +540,7 @@ if __name__ == "__main__":
     exampler_pieces = []  # 创建7个块的样板，用来查边长
     for i in range(len(shape_list)):
         exampler_pieces.append(Piece(shape_list[i], i, view=view))
-    mode="ASTAR"
+    mode="BFS"
     assert mode in ["DFS", "BFS", "ASTAR", "GREEDY", "UCS"]
 
     if mode == "DFS":
@@ -551,7 +551,7 @@ if __name__ == "__main__":
     elif mode == "ASTAR":
         ASTARsequence(view, scene, result_list, shape_list, exampler_pieces)
     elif mode == "GREEDY":
-        GreedySequence(view, scene, result_list, shape_list, exampler_pieces)
+        GreedySequence(view, scene, result_list, shape_list, exampler_pieces, "edge")
     elif mode == "UCS":
         UniCostSearchSequence(view, scene, result_list, shape_list, exampler_pieces)
     else:
@@ -569,5 +569,6 @@ if __name__ == "__main__":
         save_node(node, str(i), mode=mode)
         i+=1
     print("Saving complete")
+    exit(0)
     app.exec_()
 
