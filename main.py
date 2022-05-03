@@ -11,6 +11,8 @@ import time
 from queue import PriorityQueue
 from util import PrioritizedItem
 
+PAUSE_TIME = 200
+MODE = "BFS"
 # 序列化
 def serialize_instance(obj):
     d = {'__classname__': type(obj).__name__}
@@ -117,15 +119,15 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
         candidates = _const_parent_node.candidates
 
         #-----Debug------------
-        '''scene.clear()
+        scene.clear()
         view.update()
         _const_parent_node.paint(scene)
         view.repaint()
         view.show()
-        dieTime = QTime.currentTime().addMSecs(50)
+        dieTime = QTime.currentTime().addMSecs(PAUSE_TIME)
         while (QTime.currentTime() < dieTime):
             QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
-        '''
+
         #------------------------------------
         # print("Node expand:")
         # print("#result: ", len(result_list))
@@ -326,14 +328,14 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
 
         # -----Debug------------
         #print("priority: ", temp_p_item.priority)
-        '''scene.clear()
+        scene.clear()
         view.update()
         _const_parent_node.paint(scene)
         view.repaint()
         view.show()
-        dieTime = QTime.currentTime().addMSecs(1)
+        dieTime = QTime.currentTime().addMSecs(PAUSE_TIME)
         while (QTime.currentTime() < dieTime):
-            QCoreApplication.processEvents(QEventLoop.AllEvents, 20)'''
+            QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
 
         # ------------------------------------
         # print("Node expand:")
@@ -530,7 +532,7 @@ if __name__ == "__main__":
     scene = QGraphicsScene()
     view.setScene(scene)
     #view.show()
-    #view.showMaximized()
+    view.showMaximized()
     combo_dict = {}  #记录所有组合的dict
     scale_factor = 1
     view.scale(scale_factor, scale_factor)
@@ -540,7 +542,7 @@ if __name__ == "__main__":
     exampler_pieces = []  # 创建7个块的样板，用来查边长
     for i in range(len(shape_list)):
         exampler_pieces.append(Piece(shape_list[i], i, view=view))
-    mode="BFS"
+    mode=MODE
     assert mode in ["DFS", "BFS", "ASTAR", "GREEDY", "UCS"]
 
     if mode == "DFS":
@@ -566,7 +568,7 @@ if __name__ == "__main__":
     #save all results:
     i=1
     for node in result_list:
-        save_node(node, str(i), mode=mode)
+        #save_node(node, str(i), mode=mode)
         i+=1
     print("Saving complete")
     exit(0)
