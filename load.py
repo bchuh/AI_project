@@ -34,13 +34,15 @@ layout.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
 layout.addWidget(label)
 label.show()
 view.showMaximized()
-nodes_dir = os.path.join(os.getcwd(), 'nodes')
+mode = "DFS"
+nodes_dir = os.path.join(os.getcwd(), mode+'_nodes')
 folder_dirs = glob.glob(nodes_dir + "/*")
 folder_dirs.reverse()
 #Debug:
 combo_dict = {}
 shape_dict = {}
 organize = True
+
 if organize:
     i=1
     for dir in folder_dirs:
@@ -74,7 +76,6 @@ if organize:
         print(angles_encoding)
         print(len(shape_dict))
     ###########
-    mode = "ASTAR"
     _path = os.getcwd()
     _name = 'shape.dict'
     _folder = mode+"_nodes"
@@ -97,6 +98,7 @@ _path = os.path.join(_path,  _name)
 with open(_path, 'rb') as f:
     shape_dict = pickle.load(f)
 #########
+
 print("------Showing all shapes---------")
 
 '''_key = list(shape_dict.keys())[0]
