@@ -168,7 +168,7 @@ class Node(Poly):
             _current_edge = self.getEdge(view, _node_edge_count)
             _previous_edge = self.getEdge(view, (_node_edge_count - 1) % self.getEdgeCount())
             angle = _current_edge.angleTo(_previous_edge)
-            if round(angle) == 0 or round(angle) == 180:
+            if round(angle) == 0 or round(angle) == 180 or round(angle) == 360:
                 #connection_point = self.q_object.at(_node_edge_count)
                 self.q_object.remove(_node_edge_count)
 
@@ -374,7 +374,7 @@ class Node(Poly):
             )
             _next_edge.setPoints(_next_edge.p2(),_next_edge.p1())
             angle = _next_edge.angleTo(_current_edge)
-            self.piece_angle.append(angle)
+            self.piece_angle.append(round(angle))
 
 
     def reorgAngles(self, do_reverse = False):

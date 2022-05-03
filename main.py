@@ -606,6 +606,9 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
             p_count+=1
         pool.close()
         pool.join()
+        #为了防止get导致崩溃，先让他输出一次
+        end = time.time()
+        print("The time of execution is :", (end - start) / 60 / 60, "hours")
         result_count = 0
         for result in mp_results:
             result_count += result.get()
@@ -668,9 +671,10 @@ def DfsMultiProcessSubroutine(process_num: int, combo_dict, stack, shape_list, c
 
             #progressSi.signal.emit(0)
             if _const_parent_node.getEdgeCount() == 5:
+                result_len += 1
                 print("Process"+str(process_num)+"#result: ", result_len)
                 save_node(_const_parent_node, str(process_num)+'_'+str(result_len), mode="DFS")
-                result_len +=1
+
                 # estimateProgress(endEstimate[-2], endEstimate[-1], timeCost)
                 # getProgress(len(result_list))
                 # progressSi.signal.connect(loadUi.setProgressBar)
@@ -782,7 +786,6 @@ def DfsMultiProcessSubroutine(process_num: int, combo_dict, stack, shape_list, c
                                                piece_edge_no + 1)  # addPiece会对piece做deepcopy，所以这里不需要
                                 # 因为insert()输入的位置参数需要是当前位置的后一位，所以node_edge_no+1, 因为画图可知priece要从边向量终点添加，所以也+1
                                 _node.reduce(None, None, _cand)
-                                _node.reduce(None, None, _cand)
                                 if len(_node.candidates) <= 2 and _node.getEdgeCount() > 9:  # 因为最后一块填进去最多消除2条边，倒数第二块填进去最多消除
                                     continue
                                 '''
@@ -823,6 +826,7 @@ def DfsMultiProcessSubroutine(process_num: int, combo_dict, stack, shape_list, c
                                 if len(_node.candidates) == 0 and _node.getEdgeCount() == 5:
                                     print('stop')
                                 stack.append(_node)
+    return result_len
 #BFS
 def BFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces: list, loadUi: QMainWindow,
                 change_to_BFS=False):
@@ -1101,7 +1105,7 @@ class MainWindow(QMainWindow):
         #mode = "DFS"
         assert self.mode in ["DFS", "BFS", "ASTAR", "GREEDY", "UCS"]
 
-        '''if self.mode == "DFS":
+        if self.mode == "DFS":
             self.ui.lineEdit.setPlaceholderText("DFS Mode")
             DfsMultiProcess(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
             self.ui.comboBox.setEnabled(False)
@@ -1127,7 +1131,7 @@ class MainWindow(QMainWindow):
             UniCostSearchSequence(self.ui.graphicsView, self.scene, result_list, shape_list, exampler_pieces)
             # UniCostSearchSequence(view, scene, result_list, shape_list, exampler_pieces)
         else:
-            raise NotImplementedError()'''
+            raise NotImplementedError()
 
         end = time.time()
         info = str(self.mode) + " Mode\n\n" + str(len(result_list)) + " combination found!\n" + "Stored combinations: " + str(len(combo_dict)) + "\nThe time of execution is : " + str((end - start) / 60 / 60) + "hours" + "\nsaving all the nodes...\n"
