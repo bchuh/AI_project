@@ -49,6 +49,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="checkBox">
+        <property name="text">
+         <string>Run with Graphics</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QComboBox" name="comboBox">
         <item>
          <property name="text">
@@ -68,6 +75,11 @@
         <item>
          <property name="text">
           <string>GREEDY</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>UCS</string>
          </property>
         </item>
        </widget>
@@ -110,8 +122,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>768</width>
-         <height>365</height>
+         <width>765</width>
+         <height>388</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -168,7 +180,7 @@
          <x>0</x>
          <y>0</y>
          <width>1046</width>
-         <height>282</height>
+         <height>259</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
