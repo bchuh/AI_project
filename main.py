@@ -1016,7 +1016,7 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
                                                piece_edge_no + 1)  # addPiece会对piece做deepcopy，所以这里不需要
                                 # 因为insert()输入的位置参数需要是当前位置的后一位，所以node_edge_no+1, 因为画图可知priece要从边向量终点添加，所以也+1
                                 _node.reduce(view, exampler_pieces, _cand)
-                                    continue
+                                continue
                                 '''
                                 检查当前组合是否重复：
                                 '''
@@ -1124,7 +1124,7 @@ class MainWindow(QMainWindow):
         self.ui.infoEdit.setPlainText("running...")
         for i in range(len(shape_list)):
             exampler_pieces.append(Piece(shape_list[i], i, view=self.ui.mainView))
-        #mode = "DFS"
+        '''
         assert self.mode in ["DFS", "BFS", "ASTAR", "GREEDY", "UCS"]
         print(self.mode)
         if self.mode == "DFS":
@@ -1154,7 +1154,7 @@ class MainWindow(QMainWindow):
             UniCostSearchSequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces)
             # UniCostSearchSequence(view, scene, result_list, shape_list, exampler_pieces)
         else:
-            raise NotImplementedError()
+            raise NotImplementedError()'''
 
         end = time.time()
         info = str(len(result_list)) + " combination found!\n" + "Stored combinations: " + str(len(combo_dict)) + "\nThe time of execution is : " + str((end - start) / 60 / 60) + "hours" + "\nsaving all the nodes...\n"
@@ -1209,7 +1209,8 @@ class MainWindow(QMainWindow):
         bId = self.buttonList.index(self.sender())
         _path = os.getcwd()
         _name = 'shape.dict'
-        _folder = self.mode + "_nodes"
+        #_folder = self.mode + "_nodes"
+        _folder = "nodes"
         print(_path, type(_path))
         _path = os.path.join(_path, _folder, _name)
         dictTest = open(_path, 'rb')
