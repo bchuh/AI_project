@@ -1000,7 +1000,6 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
                                                piece_edge_no + 1)  # addPiece会对piece做deepcopy，所以这里不需要
                                 # 因为insert()输入的位置参数需要是当前位置的后一位，所以node_edge_no+1, 因为画图可知priece要从边向量终点添加，所以也+1
                                 _node.reduce(view, exampler_pieces, _cand)
-                                if len(_node.candidates) <= 2 and _node.getEdgeCount() > 9:  # 因为最后一块填进去最多消除2条边，倒数第二块填进去最多消除
                                     continue
                                 '''
                                 检查当前组合是否重复：
