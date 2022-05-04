@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1072</width>
-    <height>762</height>
+    <width>1174</width>
+    <height>792</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -49,6 +49,51 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="PAUSE">
+        <property name="text">
+         <string>Slow</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="NEXT">
+        <property name="text">
+         <string>Resume</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="comboBox_2">
+        <item>
+         <property name="text">
+          <string>Set time to slow</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>5</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>10</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>100</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="QUIT">
+        <property name="text">
+         <string>Quit Current AL</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QCheckBox" name="checkBox">
         <property name="text">
          <string>Run with Graphics</string>
@@ -56,7 +101,26 @@
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="checkBox_2">
+        <property name="text">
+         <string>Run DFS with mutiple process</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="checkBox_3">
+        <property name="text">
+         <string>Run bey steps</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QComboBox" name="comboBox">
+        <item>
+         <property name="text">
+          <string>NONE</string>
+         </property>
+        </item>
         <item>
          <property name="text">
           <string>DFS</string>
@@ -87,7 +151,7 @@
       <item>
        <widget class="QTextEdit" name="infoEdit">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -122,8 +186,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>765</width>
-         <height>388</height>
+         <width>867</width>
+         <height>572</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -179,8 +243,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>1046</width>
-         <height>259</height>
+         <width>1148</width>
+         <height>105</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -198,7 +262,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1072</width>
+     <width>1174</width>
      <height>24</height>
     </rect>
    </property>

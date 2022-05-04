@@ -153,6 +153,13 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
 
         #-----Debug------------
         if loadUi.ui.checkBox.isChecked() == True:
+            while loadUi.is_paused:
+                # if loadUi.nextStep:
+                dieTime = QTime.currentTime().addMSecs(1000)
+                while (QTime.currentTime() < dieTime):
+                    QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
+                if loadUi.ui.checkBox_3.isChecked() == True:
+                    break
             scene.clear()
             view.update()
             _const_parent_node.paint(scene)
@@ -213,9 +220,10 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
                 # view.update()
 
                 encoding = _const_parent_node.encodeMatrix()
-                dieTime = QTime.currentTime().addMSecs(1)
-                while (QTime.currentTime() < dieTime):
-                    QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
+
+                # dieTime = QTime.currentTime().addMSecs(1)
+                # while (QTime.currentTime() < dieTime):
+                #     QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
                 # _const_parent_node.clearPoly(scene)
                 # scene.clear()  # not working for some reason
                 # view.update()
@@ -317,10 +325,10 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
                                 '''
 
                                 encoding = _node.encodeMatrix()
-                                if encoding in combo_dict:  # 防止过早剪枝， 会错减
+                                if encoding in loadUi.combo_dict:  # 防止过早剪枝， 会错减
                                     continue
                                 else:
-                                    combo_dict[encoding] = 1  # 随便给键赋个值
+                                    loadUi.combo_dict[encoding] = 1  # 随便给键赋个值
                                 ### debug
 
                                 '''_node.paint(scene)
@@ -357,8 +365,8 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
                                     print('stop')
                                 stack.append(_node)
 
-        # if loadUi.isCancel == 1:
-        #     break
+        if loadUi.isCancel == 1:
+            break
     end = time.time()
     print("The time of execution is :", (end - start) / 60 / 60, "hours")
 
@@ -838,7 +846,6 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
         assert not change_to_UniCostSearch #两个change不能同时为true
     endEstimate = []
     timeCost = []
-    timeCost2 = []
     progressSi = MySignal()
     timeSi = MySignal()
     start = time.time()
@@ -857,6 +864,7 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
     )
     prio_queue.put(PrioritizedItem(3+(-2*6), _node))
     id = 0
+    # print("Hello ")
     while not prio_queue.empty():
         # 当前分支号码
         app.processEvents()
@@ -874,7 +882,11 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
         dieTime = QTime.currentTime().addMSecs(1)
         while (QTime.currentTime() < dieTime):
             QCoreApplication.processEvents(QEventLoop.AllEvents, 20)'''
-
+        if loadUi.ui.checkBox.isChecked() == True:
+            scene.clear()
+            view.update()
+            _const_parent_node.paint(scene)
+            view.repaint()
         # ------------------------------------
         # print("Node expand:")
         # print("#result: ", len(result_list))
@@ -1020,7 +1032,6 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
                                 '''
                                 检查当前组合是否重复：
                                 '''
-
                                 encoding = _node.encodeMatrix()
                                 if encoding in combo_dict:  # 防止过早剪枝， 会错减
                                     continue
@@ -1063,9 +1074,12 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
 
         nodeEstimate = time.time()
         endEstimate.append(nodeEstimate)
-        temp = estimateProgress(endEstimate[-2], endEstimate[-1], timeCost2, len(result_list))
+        temp = estimateProgress(endEstimate[-2], endEstimate[-1], timeCost, len(result_list))
         timeSi.signal.connect(loadUi.setTimecounter)
         timeSi.signal.emit(temp)
+
+        if loadUi.isCancel == 1:
+            break
 
     end = time.time()
     print("The time of execution is :", (end - start) / 60 / 60, "hours")
@@ -1095,15 +1109,26 @@ class MainWindow(QMainWindow):
         self.ui.mainView.setScene(self.scene)
         self.ui.mainView.scale(scale_factor, scale_factor)
         self.ui.combArea.hide()
+        self.ui.OK.clicked.connect(self.okClick)
         self.ui.OK.clicked.connect(self.SetUi)
         #self.ui.OK.clicked.connect(pauseWait)
         self.ui.CANCEL.clicked.connect(self.cancelClick)
         self.ui.SHOW.clicked.connect(self.showClick)
         self.ui.SHOW.clicked.connect(self.addButton)
         self.ui.SHOW.clicked.connect(self.countFile)
+        self.ui.QUIT.clicked.connect(self.quitClick)
+        self.ui.PAUSE.pressed.connect(self.pause)
+        self.ui.NEXT.clicked.connect(self.resume)
         self.ui.progressBar.setValue(0)
         self.ui.progressBar.setRange(0, 3800000)
         self.ui.timeCounter.setText("Over 12 hours")
+        self.ui.PAUSE.hide()
+        self.ui.QUIT.hide()
+        self.ui.NEXT.hide()
+        self.ui.comboBox_2.hide()
+        self.ui.CANCEL.hide()
+        self.ui.infoEdit.setPlainText("Please Chose one Algorithm.")
+
         self.buttonList = []
         self.viewList =[]
         self.subviewList = {}  # QGraphicsView(self.ui.scrollAreaWidgetContents_2)
@@ -1112,8 +1137,10 @@ class MainWindow(QMainWindow):
         self.count = 0
         self.viewNum = 0
         self.path = os.path.join(os.getcwd(), "images")
-        self.mode = "DFS"
-
+        self.mode = "NONE"
+        self.is_paused = False
+        self.nextStep = False
+        self.combo_dict = {}
 
     def SetUi(self):
         self.isCancel = 0
@@ -1124,44 +1151,43 @@ class MainWindow(QMainWindow):
         self.ui.infoEdit.setPlainText("running...")
         for i in range(len(shape_list)):
             exampler_pieces.append(Piece(shape_list[i], i, view=self.ui.mainView))
-        '''
-        assert self.mode in ["DFS", "BFS", "ASTAR", "GREEDY", "UCS"]
-        print(self.mode)
-        if self.mode == "DFS":
-            self.ui.lineEdit.setPlaceholderText("DFS Mode")
-
-            self.ui.comboBox.setEnabled(False)
-            DfsMultiProcess(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
-            
-            self.ui.lineEdit.setPlaceholderText("cancle")
-
-            # DFSsequence(view, scene, result_list, shape_list, exampler_pieces)
-            # DFS 逻辑序列集
-        elif self.mode == "BFS":
-            self.ui.lineEdit.setPlaceholderText("BFS Mode")
-            BFSsequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
-            # BFSsequence(view, scene, result_list, shape_list, exampler_pieces)
-        elif self.mode == "ASTAR":
-            self.ui.lineEdit.setPlaceholderText("ASTAR Mode")
-            ASTARsequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
-            # ASTARsequence(view, scene, result_list, shape_list, exampler_pieces)
-        elif self.mode == "GREEDY":
-            self.ui.lineEdit.setPlaceholderText("GREEDY Mode")
-            GreedySequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces)
-            # GreedySequence(view, scene, result_list, shape_list, exampler_pieces)
-        elif self.mode == "UCS":
-            self.ui.lineEdit.setPlaceholderText("UCS Mode")
-            UniCostSearchSequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces)
-            # UniCostSearchSequence(view, scene, result_list, shape_list, exampler_pieces)
-        else:
-            raise NotImplementedError()'''
+        assert self.mode in ["DFS", "BFS", "ASTAR", "GREEDY", "UCS", "NONE"]
+        self.setAlgorithms(result_list, shape_list, exampler_pieces)
+        #self.combo_dict = {}
+        # print(self.mode)
+        # if self.mode == "DFS":
+        #     self.ui.lineEdit.setPlaceholderText("DFS Mode")
+        #     DFSsequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
+        #     self.ui.comboBox.setEnabled(False)
+        #     # DfsMultiProcess(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
+        #
+        #     self.ui.lineEdit.setPlaceholderText("cancle")
+        #
+        #     # DFSsequence(view, scene, result_list, shape_list, exampler_pieces, self)
+        #     # DFS 逻辑序列集
+        # elif self.mode == "BFS":
+        #     self.ui.lineEdit.setPlaceholderText("BFS Mode")
+        #     BFSsequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
+        #     # BFSsequence(view, scene, result_list, shape_list, exampler_pieces)
+        # elif self.mode == "ASTAR":
+        #     self.ui.lineEdit.setPlaceholderText("ASTAR Mode")
+        #     ASTARsequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
+        #     # ASTARsequence(view, scene, result_list, shape_list, exampler_pieces)
+        # elif self.mode == "GREEDY":
+        #     self.ui.lineEdit.setPlaceholderText("GREEDY Mode")
+        #     GreedySequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces)
+        #     # GreedySequence(view, scene, result_list, shape_list, exampler_pieces)
+        # elif self.mode == "UCS":
+        #     self.ui.lineEdit.setPlaceholderText("UCS Mode")
+        #     UniCostSearchSequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces)
+        #     # UniCostSearchSequence(view, scene, result_list, shape_list, exampler_pieces)
+        # else:
+        #     raise NotImplementedError()
 
         end = time.time()
-        info = str(len(result_list)) + " combination found!\n" + "Stored combinations: " + str(len(combo_dict)) + "\nThe time of execution is : " + str((end - start) / 60 / 60) + "hours" + "\nsaving all the nodes...\n"
-
-
+        info = str(len(result_list)) + " combination found!\n" + "Stored combinations: " + str(len(self.combo_dict)) + "\nThe time of execution is : " + str((end - start) / 60 / 60) + "hours" + "\nsaving all the nodes...\n"
         print(len(result_list), "combination found!")
-        print("Stored combinations: ", len(combo_dict))
+        print("Stored combinations: ", len(self.combo_dict))
         print("The time of execution is :", (end - start) / 60 / 60, "hours")
         print("saving all the nodes...")
         # save all results:
@@ -1170,25 +1196,79 @@ class MainWindow(QMainWindow):
             save_node(node, str(i), mode=self.mode)
             i += 1
         print("Saving complete")
-        self.ui.infoEdit.setPlainText(info)
+        if self.mode != "NONE":
+            self.ui.infoEdit.setPlainText(info)
+        else:
+            self.ui.infoEdit.setPlainText("Please Chose one Algorithm.")
+
+    def setAlgorithms(self, result_list, shape_list, exampler_pieces):
+        if self.mode == "DFS":
+            self.ui.lineEdit.setPlaceholderText("DFS Mode")
+            self.ui.comboBox.setEnabled(False)
+            self.combo_dict.clear()
+            if self.ui.checkBox_2.isChecked() == True:
+                DfsMultiProcess(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
+            else:
+                DFSsequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
+            self.ui.lineEdit.setPlaceholderText("cancle")
+            # DFSsequence(view, scene, result_list, shape_list, exampler_pieces, self)
+            # DFS 逻辑序列集
+        elif self.mode == "BFS":
+            self.ui.lineEdit.setPlaceholderText("BFS Mode")
+            self.ui.comboBox.setEnabled(False)
+            self.combo_dict.clear()
+            BFSsequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
+            # BFSsequence(view, scene, result_list, shape_list, exampler_pieces)
+        elif self.mode == "ASTAR":
+            self.ui.lineEdit.setPlaceholderText("ASTAR Mode")
+            self.ui.comboBox.setEnabled(False)
+            self.combo_dict.clear()
+            ASTARsequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
+            # ASTARsequence(view, scene, result_list, shape_list, exampler_pieces)
+        elif self.mode == "GREEDY":
+            self.ui.lineEdit.setPlaceholderText("GREEDY Mode")
+            self.ui.comboBox.setEnabled(False)
+            self.combo_dict.clear()
+            GreedySequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces)
+            # GreedySequence(view, scene, result_list, shape_list, exampler_pieces)
+        elif self.mode == "UCS":
+            self.ui.lineEdit.setPlaceholderText("UCS Mode")
+            self.ui.comboBox.setEnabled(False)
+            self.combo_dict.clear()
+            UniCostSearchSequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces)
+            # UniCostSearchSequence(view, scene, result_list, shape_list, exampler_pieces)
+        elif self.mode == "NONE":
+            print("STOP")
+        else:
+            raise NotImplementedError()
 
     def handleSelectionChange(self):
         self.mode = self.ui.comboBox.currentText()
         print("changed")
         print(self.mode)
 
+    def handletimeChange(self):
+        print("Set time")
 
     def okClick(self):
-        self.isCancel = 0
-        self.ui.comboBox.setEnabled(False)
-        print("OK")
-        self.ui.mainView.show()
 
+        if self.mode != 'NONE':
+            self.ui.PAUSE.show()
+            self.ui.QUIT.show()
+            self.ui.NEXT.show()
+            self.ui.comboBox_2.show()
+            self.isCancel = 0
+            self.ui.comboBox.setEnabled(False)
+            self.ui.checkBox_2.setEnabled(False)
+            print("OK")
+            # self.ui.mainView.show()
 
     def cancelClick(self):
-        # self.isCancel = 1
         self.ui.comboBox.setEnabled(True)
+        self.ui.infoEdit.show()
         self.ui.combArea.hide()
+        self.ui.CANCEL.hide()
+        self.ui.SHOW.show()
         if len(self.buttonList) != 0:
             while self.ui.typeLayout.count():
                 item = self.ui.typeLayout.takeAt(0)
@@ -1201,9 +1281,32 @@ class MainWindow(QMainWindow):
 
     def showClick(self):
         self.ui.mainView.hide()
+        self.ui.infoEdit.hide()
+        self.ui.PAUSE.hide()
+        self.ui.QUIT.hide()
+        self.ui.NEXT.hide()
+        self.ui.comboBox_2.hide()
+        self.ui.CANCEL.show()
         self.ui.combArea.show()
+        self.ui.SHOW.hide()
         #self.ui.mainscrollArea.
         #self.addButton()
+
+    def quitClick(self):
+        self.ui.checkBox_2.setEnabled(True)
+        self.ui.PAUSE.hide()
+        self.ui.QUIT.hide()
+        self.ui.NEXT.hide()
+        self.ui.comboBox_2.hide()
+        self.ui.CANCEL.hide()
+        self.isCancel = 1
+        self.cancelClick()
+
+    def pause(self):
+        self.is_paused = True
+
+    def resume(self):
+        self.is_paused = False
 
     def showComb(self):
         bId = self.buttonList.index(self.sender())
@@ -1285,7 +1388,6 @@ class MainWindow(QMainWindow):
             item = self.ui.combLayout.takeAt(0)
             item.widget().deleteLater()
         self.widgetList.clear()
-        self.widgetList.clear()
         self.viewList.clear()
         scaleFactor = 0.7
         for wId in range(len(self.viewNum)):
@@ -1317,7 +1419,7 @@ class MainWindow(QMainWindow):
         self.ui.timeCounter.setText("remaining " + str(value) + " hours")
 
 if __name__ == "__main__":
-    combo_dict = {}  # 记录所有组合的dict
+    #combo_dict = {}  # 记录所有组合的dict
     scale_factor = 1
     QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_ShareOpenGLContexts)
     start = time.time()
