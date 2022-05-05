@@ -49,7 +49,13 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.SHOW)
 
+        self.checkBox = QCheckBox(self.centralwidget)
+        self.checkBox.setObjectName(u"checkBox")
+
+        self.verticalLayout.addWidget(self.checkBox)
+
         self.comboBox = QComboBox(self.centralwidget)
+        self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
@@ -62,6 +68,7 @@ class Ui_MainWindow(object):
         self.infoEdit.setObjectName(u"infoEdit")
         sizePolicy.setHeightForWidth(self.infoEdit.sizePolicy().hasHeightForWidth())
         self.infoEdit.setSizePolicy(sizePolicy)
+        self.infoEdit.setReadOnly(True)
 
         self.verticalLayout.addWidget(self.infoEdit)
 
@@ -70,16 +77,21 @@ class Ui_MainWindow(object):
 
         self.progressBar = QProgressBar(self.centralwidget)
         self.progressBar.setObjectName(u"progressBar")
-        self.progressBar.setValue(0)
+        self.progressBar.setValue(24)
 
         self.gridLayout.addWidget(self.progressBar, 2, 0, 1, 1)
 
         self.mainscrollArea = QScrollArea(self.centralwidget)
         self.mainscrollArea.setObjectName(u"mainscrollArea")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.mainscrollArea.sizePolicy().hasHeightForWidth())
+        self.mainscrollArea.setSizePolicy(sizePolicy1)
         self.mainscrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 768, 578))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 765, 388))
         self.horizontalLayout_2 = QHBoxLayout(self.scrollAreaWidgetContents)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.mainView = QGraphicsView(self.scrollAreaWidgetContents)
@@ -105,15 +117,25 @@ class Ui_MainWindow(object):
 
         self.combArea = QScrollArea(self.centralwidget)
         self.combArea.setObjectName(u"combArea")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.combArea.sizePolicy().hasHeightForWidth())
-        self.combArea.setSizePolicy(sizePolicy1)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.combArea.sizePolicy().hasHeightForWidth())
+        self.combArea.setSizePolicy(sizePolicy2)
+        self.combArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.combArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.combArea.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContentsOnFirstShow)
         self.combArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents_2 = QWidget()
         self.scrollAreaWidgetContents_2.setObjectName(u"scrollAreaWidgetContents_2")
-        self.scrollAreaWidgetContents_2.setGeometry(QRect(0, 0, 1046, 69))
+        self.scrollAreaWidgetContents_2.setGeometry(QRect(0, 0, 1046, 259))
+        self.horizontalLayout_3 = QHBoxLayout(self.scrollAreaWidgetContents_2)
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.combLayout = QHBoxLayout()
+        self.combLayout.setObjectName(u"combLayout")
+
+        self.horizontalLayout_3.addLayout(self.combLayout)
+
         self.combArea.setWidget(self.scrollAreaWidgetContents_2)
 
         self.gridLayout.addWidget(self.combArea, 0, 0, 1, 2)
@@ -137,10 +159,12 @@ class Ui_MainWindow(object):
         self.OK.setText(QCoreApplication.translate("MainWindow", u"OK", None))
         self.CANCEL.setText(QCoreApplication.translate("MainWindow", u"Cancel", None))
         self.SHOW.setText(QCoreApplication.translate("MainWindow", u"Show", None))
+        self.checkBox.setText(QCoreApplication.translate("MainWindow", u"Run with Graphics", None))
         self.comboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"DFS", None))
         self.comboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"BFS", None))
         self.comboBox.setItemText(2, QCoreApplication.translate("MainWindow", u"ASTAR", None))
         self.comboBox.setItemText(3, QCoreApplication.translate("MainWindow", u"GREEDY", None))
+        self.comboBox.setItemText(4, QCoreApplication.translate("MainWindow", u"UCS", None))
 
         self.timeCounter.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
     # retranslateUi
