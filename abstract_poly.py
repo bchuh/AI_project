@@ -15,9 +15,10 @@ class Poly:
         self.next_step = 0
 
     def getEdgeCount(self):
-        return len(self.q_object.toList())
+        return self.q_object.size()
 
     def getEdge(self, view: QGraphicsView, start_index, reverse=False):
+        view = None
         _edge_count = self.getEdgeCount()
         start_index = start_index % _edge_count
         if view is not None:

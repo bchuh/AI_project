@@ -21,7 +21,6 @@ def serialize_instance(obj):
     d.update(vars(obj))
     return d
 
-
 # 反序列化
 def unserialize_object(d):
     clsname = d.pop('__classname__', None)
@@ -310,6 +309,7 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
                                                piece_edge_no + 1)  # addPiece会对piece做deepcopy，所以这里不需要
                                 # 因为insert()输入的位置参数需要是当前位置的后一位，所以node_edge_no+1, 因为画图可知priece要从边向量终点添加，所以也+1
                                 _node.reduce(view, exampler_pieces, _cand)
+
                                 if len(_node.candidates) <= 2 and _node.getEdgeCount() > 9:  # 因为最后一块填进去最多消除2条边，倒数第二块填进去最多消除
                                     continue
                                 '''
@@ -602,6 +602,8 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
                             stack.append(_node)
     mp_results = []
     p_count = 0
+    print(len(stack), " initial branches created. Dispatching to process pool.")
+    print("Engaging multi-process search!")
     with Pool(4) as pool:
         for item in stack:
             mp_results.append(pool.apply_async(DfsMultiProcessSubroutine, args=(p_count, combo_dict, [item], shape_list,)))
@@ -615,8 +617,7 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
         for result in mp_results:
             result_count += result.get()
         print(str(result_count)+" results found!")
-    end = time.time()
-    print("The time of execution is :", (end - start) / 60 / 60, "hours")
+
 
 def DfsMultiProcessSubroutine(process_num: int, combo_dict, stack, shape_list, change_to_BFS =False):
     scale_factor = 1
@@ -788,6 +789,9 @@ def DfsMultiProcessSubroutine(process_num: int, combo_dict, stack, shape_list, c
                                                piece_edge_no + 1)  # addPiece会对piece做deepcopy，所以这里不需要
                                 # 因为insert()输入的位置参数需要是当前位置的后一位，所以node_edge_no+1, 因为画图可知priece要从边向量终点添加，所以也+1
                                 _node.reduce(None, None, _cand)
+                                # 尝试新增的剪枝
+                                if _node.getEdgeCount() > 8:
+                                    continue
                                 if len(_node.candidates) <= 2 and _node.getEdgeCount() > 9:  # 因为最后一块填进去最多消除2条边，倒数第二块填进去最多消除
                                     continue
                                 '''
@@ -1124,8 +1128,8 @@ class MainWindow(QMainWindow):
         self.ui.infoEdit.setPlainText("running...")
         for i in range(len(shape_list)):
             exampler_pieces.append(Piece(shape_list[i], i, view=self.ui.mainView))
-        '''
-        assert self.mode in ["DFS", "BFS", "ASTAR", "GREEDY", "UCS"]
+
+        '''assert self.mode in ["DFS", "BFS", "ASTAR", "GREEDY", "UCS"]
         print(self.mode)
         if self.mode == "DFS":
             self.ui.lineEdit.setPlaceholderText("DFS Mode")
@@ -1210,7 +1214,7 @@ class MainWindow(QMainWindow):
         _path = os.getcwd()
         _name = 'shape.dict'
         #_folder = self.mode + "_nodes"
-        _folder = "nodes"
+        _folder = "DFS_nodes"
         print(_path, type(_path))
         _path = os.path.join(_path, _folder, _name)
         dictTest = open(_path, 'rb')

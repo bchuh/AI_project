@@ -306,8 +306,8 @@ class Node(Poly):
 
     def reorgPieceMat(self):
         mat = deepcopy(self.piece_matrix)
-        max = (-1, -1, -1)
-        max_parall = (-1, -1, -1)
+        max = (-1000, -1000, -1)
+        max_parall = (-1000, -1000, -1)
         swap_L_tri = False
         swap_S_tri = False
         _L_done = False

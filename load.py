@@ -92,11 +92,28 @@ else:
 #########
 _path = os.getcwd()
 _name = 'shape.dict'
-_folder = mode+"_nodes"
+if mode == 'None':
+    _folder = "nodes"
+else:
+    _folder = mode+"_nodes"
 _path = os.path.join(_path, _folder)
 _path = os.path.join(_path,  _name)
 with open(_path, 'rb') as f:
     shape_dict = pickle.load(f)
+##---
+'''_path2 = os.getcwd()
+_path2 = os.path.join(_path2, "DFS_nodes")
+_path2 = os.path.join(_path2, "shape.dict")
+with open(_path2, 'rb') as f:
+    shape_dict_new :dict= pickle.load(f)
+print(len(shape_dict.keys()))
+print(len(shape_dict_new.keys()))
+for k in shape_dict_new.keys():
+    old_l = len(shape_dict_new[k])
+    new_l = len(shape_dict[k])
+    if (old_l-new_l)!=0:
+        print(k, "----", (old_l-new_l))'''
+##---
 #########
 
 print("------Showing all shapes---------")

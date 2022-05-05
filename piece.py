@@ -58,7 +58,7 @@ class Piece(Poly):
                 return 1
             if self.shape == 4:
                 return 2
-        return len(self.q_object.toList())
+        return self.q_object.size()
 
     def isFlippable(self):
         return self.shape == 4
