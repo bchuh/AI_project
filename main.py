@@ -1316,8 +1316,11 @@ class MainWindow(QMainWindow):
         bId = self.buttonList.index(self.sender())
         _path = os.getcwd()
         _name = 'shape.dict'
-        #_folder = self.mode + "_nodes"
-        _folder = "DFS_nodes"
+        if self.mode == 'NONE':
+            _folder = "nodes"
+        else:
+            _folder = self.mode + "_nodes"
+        #_folder = "DFS_nodes"
         print(_path, type(_path))
         _path = os.path.join(_path, _folder, _name)
         dictTest = open(_path, 'rb')
