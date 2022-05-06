@@ -1102,7 +1102,9 @@ class MainWindow(QMainWindow):
         # 从 UI 定义中动态 创建一个相应的窗口对象
         # 注意：里面的控件对象也成为窗口对象的属性了
         # 比如 self.ui.button , self.ui.textEdit
-        self.ui = QUiLoader().load('GUI.ui')
+        self.uiPath = os.path.join(os.getcwd(), "GUI.ui")
+        self.ui = QUiLoader().load(self.uiPath)
+        #self.ui = QUiLoader().load('GUI.ui')
         screen = QGuiApplication.primaryScreen().geometry()
         self.width = screen.width()
         self.height = screen.height()
@@ -1132,6 +1134,7 @@ class MainWindow(QMainWindow):
         self.ui.comboBox_2.hide()
         self.ui.CANCEL.hide()
         self.ui.infoEdit.setPlainText("Please Chose one Algorithm.")
+        self.ui.comboBox_2.currentIndexChanged.connect(self.handletimeChange())
 
         self.buttonList = []
         self.viewList =[]
@@ -1140,7 +1143,7 @@ class MainWindow(QMainWindow):
         self.isCancel = 0
         self.count = 0
         self.viewNum = 0
-        self.path = os.path.join(os.getcwd(), "images")
+        self.imagesPath = os.path.join(os.getcwd(), "images")
         self.mode = "NONE"
         self.is_paused = False
         self.nextStep = False
@@ -1252,7 +1255,12 @@ class MainWindow(QMainWindow):
         print(self.mode)
 
     def handletimeChange(self):
-        print("Set time")
+        print(type(self.ui.comboBox_2.currentText))
+        if type(self.ui.comboBox_2.currentText) == "int":
+            self.slowDown = int(self.ui.comboBox_2.currentText())
+            print("Set slow down", self.slowDown)
+        else:
+            print("NO change")
 
     def okClick(self):
 
@@ -1414,7 +1422,7 @@ class MainWindow(QMainWindow):
             self.ui.combLayout.addWidget(self.widgetList[wId])
 
     def countFile(self):
-        self.count = len(os.listdir(self.path))
+        self.count = len(os.listdir(self.imagesPath))
         print(self.count)
 
     def setProgressBar(self, v = None):
