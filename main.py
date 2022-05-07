@@ -131,7 +131,8 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
     timeCost = []
     progressSi = MySignal()
     timeSi = MySignal()
-    j = 1
+    progressSi.signal.connect(loadUi.setProgressBar)
+    timeSi.signal.connect(loadUi.setTimecounter)
     endEstimate.append(int(start))
     _node = Node()
     _node.addPiece(
@@ -218,7 +219,6 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
                 # view.repaint()
                 # view.update()
 
-                encoding = _const_parent_node.encodeMatrix()
 
                 # dieTime = QTime.currentTime().addMSecs(1)
                 # while (QTime.currentTime() < dieTime):
@@ -316,8 +316,10 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
                                 _node.addPiece(_piece, longer_piece_edge, True, node_edge_no + 1,
                                                piece_edge_no + 1)  # addPiece会对piece做deepcopy，所以这里不需要
                                 # 因为insert()输入的位置参数需要是当前位置的后一位，所以node_edge_no+1, 因为画图可知priece要从边向量终点添加，所以也+1
-                                _node.reduce(view, exampler_pieces, _cand)
-
+                                _node.reduce(None, None, _cand)
+                                # 尝试新增的剪枝
+                                if _node.getEdgeCount() > 8:
+                                    continue
                                 if len(_node.candidates) <= 2 and _node.getEdgeCount() > 9:  # 因为最后一块填进去最多消除2条边，倒数第二块填进去最多消除
                                     continue
                                 '''
@@ -342,17 +344,16 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
 
                                 ###
                                 id += 1
-                                progressSi.signal.connect(loadUi.setProgressBar)
-                                progressSi.signal.emit(id)
+
+
 
                                 _node.ID = id
-                                if (id // (1000 * j)):
-                                    nodeEstimate = time.time()
-                                    endEstimate.append(int(nodeEstimate))
-                                    temp = estimateProgress(endEstimate[-2], endEstimate[-1], timeCost, id)
-                                    timeSi.signal.connect(loadUi.setTimecounter)
-                                    timeSi.signal.emit(temp)
-                                    j += 1
+
+                                    #nodeEstimate = time.time()
+                                    #endEstimate.append(int(nodeEstimate))
+                                    #temp = estimateProgress(endEstimate[-2], endEstimate[-1], timeCost, id)
+
+                                    #timeSi.signal.emit(temp)
                                 #### debug 2
                                 '''_debug_matrix=_node.matrix
                                 _debug_list=[]
@@ -361,14 +362,16 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
                                         print("WTF?")
                                     _debug_list.append(_debug_matrix[5][i])'''
                                 ####
-                                if len(_node.candidates) == 0 and _node.getEdgeCount() == 5:
-                                    print('stop')
+                                if (id % 1000 == 0):
+                                    print(id)
+                                    progressSi.signal.emit(id)
                                 stack.append(_node)
 
         if loadUi.isCancel == 1:
             break
     end = time.time()
     print("The time of execution is :", (end - start) / 60 / 60, "hours")
+    print("final value of \'id\' = ", id)
 
 def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces :list, loadUi: QMainWindow, change_to_BFS=False):
     '''
@@ -566,7 +569,6 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
                             _node.addPiece(_piece, longer_piece_edge, True, node_edge_no + 1,
                                            piece_edge_no + 1)  # addPiece会对piece做deepcopy，所以这里不需要
                             # 因为insert()输入的位置参数需要是当前位置的后一位，所以node_edge_no+1, 因为画图可知priece要从边向量终点添加，所以也+1
-                            _node.reduce(view, exampler_pieces, _cand)
                             _node.reduce(view, exampler_pieces, _cand)
                             if len(_node.candidates) <= 2 and _node.getEdgeCount() > 9:  # 因为最后一块填进去最多消除2条边，倒数第二块填进去最多消除
                                 continue
@@ -798,7 +800,7 @@ def DfsMultiProcessSubroutine(process_num: int, combo_dict, stack, shape_list, c
                                 # 因为insert()输入的位置参数需要是当前位置的后一位，所以node_edge_no+1, 因为画图可知priece要从边向量终点添加，所以也+1
                                 _node.reduce(None, None, _cand)
                                 # 尝试新增的剪枝
-                                if _node.getEdgeCount() > 8:
+                                if _node.getEdgeCount() > 9:
                                     continue
                                 if len(_node.candidates) <= 2 and _node.getEdgeCount() > 9:  # 因为最后一块填进去最多消除2条边，倒数第二块填进去最多消除
                                     continue
@@ -850,6 +852,7 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
         assert not change_to_UniCostSearch #两个change不能同时为true
     endEstimate = []
     timeCost = []
+    combo_dict = {}
     progressSi = MySignal()
     timeSi = MySignal()
     start = time.time()
@@ -861,6 +864,8 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
     label.show()
     prio_queue= PriorityQueue()
     iter_count = 0
+    progressSi.signal.connect(loadUi.setProgressBar)
+
     _node :Node = Node()
     _node.addPiece(
         Piece(shape_list[_node.candidates.pop(2)], 2),
@@ -877,7 +882,7 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
         candidates = _const_parent_node.candidates
 
         # -----Debug------------
-        print("priority: ", temp_p_item.priority)
+        #print("priority: ", temp_p_item.priority)
         '''scene.clear()
         view.update()
         _const_parent_node.paint(scene)
@@ -913,18 +918,18 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
             #
             iter_count += 1  # 第几个组合
             timeCost2 = []
-            progressSi.signal.connect(loadUi.setProgressBar)
-            progressSi.signal.emit(iter_count)
+
+
             if _const_parent_node.getEdgeCount() == 5:
                 result_list.append(_const_parent_node)
                 print("#result: ", len(result_list))
                 label.setText("<font size=300 color=white>" + str(len(result_list)) + "</font>")
-                if (len(result_list)==1507):
+                if (len(result_list)==856):
                     break
                 # Debug
                 # view.hide()
                 # view.show()
-                scene.clear()
+                '''scene.clear()
                 view.update()
                 _const_parent_node.paint(scene)
                 view.setBackgroundBrush(Qt.gray)
@@ -933,7 +938,7 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
                 encoding = _const_parent_node.encodeMatrix()
                 dieTime = QTime.currentTime().addMSecs(1)
                 while (QTime.currentTime() < dieTime):
-                    QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
+                    QCoreApplication.processEvents(QEventLoop.AllEvents, 20)'''
 
                 # nodeEstimate = time.time()
                 # endEstimate.append(nodeEstimate)
@@ -977,8 +982,8 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
                         # TODO: 检查边数
                         # TODO: 检查组合体内角判断两组合体是否外形一样
 
-                        _node_edge = _parent_node.getEdge(view, node_edge_no, True)
-                        _piece_edge = _exampler_piece.getEdge(view, piece_edge_no)
+                        _node_edge = _parent_node.getEdge(None, node_edge_no, True)
+                        _piece_edge = _exampler_piece.getEdge(None, piece_edge_no)
                         _n_edge_len = _node_edge.length()
                         _p_edge_len = _piece_edge.length()
                         # is_original_edge = _parent_node.isOriginalPieceEdge(_parent_node.edge_owner[node_edge_no], exampler_pieces, _node_edge)
@@ -999,30 +1004,31 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
                             _loop_count=1'''
                         ###
                         for i in range(_loop_count):
-                            _node = deepcopy(_parent_node)
-                            _piece = deepcopy(_exampler_piece)  # create a new one instead of sharing
+                            _node = pickle.loads(pickle.dumps(_parent_node))
+                            #_piece = deepcopy(_exampler_piece)  # create a new one instead of sharing
+                            _piece = pickle.loads(pickle.dumps(_exampler_piece))
                             _node.parent_ID = _parent_node.ID
-                            _node_edge = _node.getEdge(view, node_edge_no, True)
-                            _piece_edge = _piece.getEdge(view, piece_edge_no)
+                            _node_edge = _node.getEdge(None, node_edge_no, True)
+                            _piece_edge = _piece.getEdge(None, piece_edge_no)
                             # 开始旋转
                             angle = _piece_edge.angleTo(_node_edge)
                             trans = QTransform()
                             trans.rotate(360 - angle)
                             _piece.q_object = trans.map(_piece.q_object)
                             # 因为旋转改变了坐标，要再获取一次
-                            _node_edge = _node.getEdge(view, node_edge_no)
-                            _piece_edge = _piece.getEdge(view, piece_edge_no, True)
+                            _node_edge = _node.getEdge(None, node_edge_no)
+                            _piece_edge = _piece.getEdge(None, piece_edge_no, True)
                             if i == 0:
                                 _piece.q_object.translate(
                                     -scale_factor * (_piece_edge.p1() - _node_edge.p1()).toPoint()
                                 )
-                                _neighbor_edge = _node.getEdge(view, node_edge_no - 1)
+                                _neighbor_edge = _node.getEdge(None, node_edge_no - 1)
                                 node_angle = _neighbor_edge.angleTo(_node_edge)
                             else:
                                 _piece.q_object.translate(
                                     -scale_factor * (_piece_edge.p2() - _node_edge.p2()).toPoint()
                                 )
-                                _neighbor_edge = _node.getEdge(view, node_edge_no + 1)
+                                _neighbor_edge = _node.getEdge(None, node_edge_no + 1)
                                 node_angle = _node_edge.angleTo(_neighbor_edge)
                             # check if connect to an outer vertex
                             if node_angle >= 180:
@@ -1031,8 +1037,10 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
                                 _node.addPiece(_piece, longer_piece_edge, True, node_edge_no + 1,
                                                piece_edge_no + 1)  # addPiece会对piece做deepcopy，所以这里不需要
                                 # 因为insert()输入的位置参数需要是当前位置的后一位，所以node_edge_no+1, 因为画图可知priece要从边向量终点添加，所以也+1
-                                _node.reduce(view, exampler_pieces, _cand)
-                                continue
+                                _node.reduce(None, None, _cand)
+                                # 尝试新增的剪枝
+                                if _node.getEdgeCount() > 8:
+                                    continue
                                 '''
                                 检查当前组合是否重复：
                                 '''
@@ -1074,19 +1082,24 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
                                     F_score = _node.getGScore()
                                 else:
                                     F_score=_node.getGScore()+_node.getHScore()
+
+                                if (id % 1000 == 0):
+                                    print(id)
+                                    progressSi.signal.emit(id)
                                 prio_queue.put(PrioritizedItem(F_score, _node))
 
-        nodeEstimate = time.time()
-        endEstimate.append(nodeEstimate)
-        temp = estimateProgress(endEstimate[-2], endEstimate[-1], timeCost, len(result_list))
-        timeSi.signal.connect(loadUi.setTimecounter)
-        timeSi.signal.emit(temp)
+        #nodeEstimate = time.time()
+        #endEstimate.append(nodeEstimate)
+        #temp = estimateProgress(endEstimate[-2], endEstimate[-1], timeCost, len(result_list))
+        #timeSi.signal.connect(loadUi.setTimecounter)
+        #timeSi.signal.emit(temp)
 
         if loadUi.isCancel == 1:
             break
 
     end = time.time()
     print("The time of execution is :", (end - start) / 60 / 60, "hours")
+    print("final value of \'id\' = ", id)
 
 def GreedySequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces: list, loadUi: QMainWindow, heuristic):
     assert heuristic in ["edge", "depth"]
@@ -1140,8 +1153,15 @@ class MainWindow(QMainWindow):
         self.isCancel = 0
         self.count = 0
         self.viewNum = 0
-        self.path = os.path.join(os.getcwd(), "images")
         self.mode = "NONE"
+        #self.path = os.path.join(os.getcwd(), "images")
+        _path = os.getcwd()
+        _folder = "images"
+        _path = os.path.join(_path, self.mode + "_nodes")
+        _path = os.path.join(_path, _folder)
+        self.path = _path
+        ###
+
         self.is_paused = False
         self.nextStep = False
         self.combo_dict = {}
@@ -1248,6 +1268,12 @@ class MainWindow(QMainWindow):
 
     def handleSelectionChange(self):
         self.mode = self.ui.comboBox.currentText()
+        _path = os.getcwd()
+        _folder = "images"
+        _path = os.path.join(_path, self.mode + "_nodes")
+        _path = os.path.join(_path, _folder)
+        self.path = _path
+        ###
         print("changed")
         print(self.mode)
 
@@ -1356,7 +1382,7 @@ class MainWindow(QMainWindow):
             self.buttonList.append(QPushButton(str(pId + 1), self.ui))
             # button = QPushButton(str(pId + 1), self.ui)
 
-            path = './images' + '/' + str(pId + 1)
+            path = './'+ self.mode+"_nodes" + '/' + 'images/'+str(pId + 1)
             '''_path = os.getcwd()
             imagePath = os.path.join(os.path.join(_path, "images"), str(pId + 1))'''
             '''if os.name == "nt":
@@ -1417,9 +1443,8 @@ class MainWindow(QMainWindow):
         self.count = len(os.listdir(self.path))
         print(self.count)
 
-    def setProgressBar(self, v = None):
-        value = self.ui.progressBar.value() + 1
-        self.ui.progressBar.setValue(value)
+    def setProgressBar(self, v):
+        self.ui.progressBar.setValue(v)
 
         # estimateProgress()
     def setTimecounter(self,value: float):

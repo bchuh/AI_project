@@ -362,13 +362,15 @@ class Node(Poly):
         self.piece_angle = []
         self.node_edges = []
         for _node_edge_count in range(0, self.getEdgeCount()):
-            _current_edge = self.getEdge(None, _node_edge_count, True)
-            _next_edge = self.getEdge(None, (_node_edge_count + 1) % self.getEdgeCount(), True)
+            _current_edge = self.getEdge(view, _node_edge_count, True)
+            _next_edge = self.getEdge(view, (_node_edge_count + 1) % self.getEdgeCount(), True)
             _upper = round(_next_edge.length())//10
             _lower = round(_next_edge.length())%10
             if _lower%2 !=0:
                 _lower += 1
             _edge_len = _upper*10+_lower
+            if _edge_len ==224:
+                _edge_len = 226
             self.node_edges.append(
                 _edge_len
             )

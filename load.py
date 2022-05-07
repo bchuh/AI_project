@@ -34,7 +34,7 @@ layout.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
 layout.addWidget(label)
 label.show()
 view.showMaximized()
-mode = "DFS"
+mode = "BFS"
 nodes_dir = os.path.join(os.getcwd(), mode+'_nodes')
 folder_dirs = glob.glob(nodes_dir + "/*")
 folder_dirs.reverse()
@@ -101,18 +101,18 @@ _path = os.path.join(_path,  _name)
 with open(_path, 'rb') as f:
     shape_dict = pickle.load(f)
 ##---
-'''_path2 = os.getcwd()
-_path2 = os.path.join(_path2, "DFS_nodes")
+_path2 = os.getcwd()
+_path2 = os.path.join(_path2, "nodes")
 _path2 = os.path.join(_path2, "shape.dict")
 with open(_path2, 'rb') as f:
     shape_dict_new :dict= pickle.load(f)
 print(len(shape_dict.keys()))
 print(len(shape_dict_new.keys()))
-for k in shape_dict_new.keys():
-    old_l = len(shape_dict_new[k])
-    new_l = len(shape_dict[k])
-    if (old_l-new_l)!=0:
-        print(k, "----", (old_l-new_l))'''
+i=0
+for k in shape_dict.keys():
+    if k not in shape_dict_new:
+        print(k, str(i))
+    i+=1
 ##---
 #########
 
@@ -132,6 +132,13 @@ for item in shape_dict[_key]:
     scene.clear()
     view.update()'''
 i=1
+#在xxx_nodes中建立image文件夹
+_path = os.getcwd()
+_folder = "images"
+_path = os.path.join(_path, mode+"_nodes")
+_path = os.path.join(_path, _folder)
+if not os.path.exists(_path):
+    os.mkdir(_path)
 for key in shape_dict.keys():
     '''test_tup = (90.0, 90.0, 90.0)
     if not x_in_y(test_tup,key[0]):
@@ -151,6 +158,7 @@ for key in shape_dict.keys():
     _path = os.getcwd()
     _name = str(i)+'.jpg'
     _folder = "images"
+    _path = os.path.join(_path, mode+"_nodes")
     _path = os.path.join(_path, _folder)
     _path = os.path.join(_path, _name)
     image.save(_path)
