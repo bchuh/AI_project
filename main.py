@@ -87,7 +87,7 @@ def load_node(file_name: str, with_suffix_and_absolute_path = False):
     return node
 
 class MySignal(QObject):
-        signal = Signal(int)
+        signal = Signal(float)
 
 @Slot()
 def pauseWait():
@@ -110,6 +110,13 @@ def estimateProgress(statrEstimate: int, endEstimate: int, timeCost: list, listN
     print(timeRemain, "hours")
     return timeRemain
 
+def estimateProgress2(mode :str, start :float, now :float):
+    mode_names = ["DFS_mp", "DFS", "BFS", "ASTAR", "GREEDY", "UCS"]
+    assert mode in mode_names
+    time_record = [0.832, 2, 1.8, 1.7, 2, 2]
+    total_time = time_record[mode_names.index(mode)]
+    used_time = (now-start)/60/60
+    return total_time-used_time
 
 def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces :list, loadUi: QMainWindow, change_to_BFS=False):
     '''
@@ -123,7 +130,10 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
     :param change_to_BFS: 若为True则pop,push行为改为BFS模式，即queue模式（先进先出)
     :return:
     '''
-
+    if change_to_BFS:
+        MODE = "BFS"
+    else:
+        MODE = "DFS"
     start=time.time()
     stack = []
     iter_count = 0
@@ -365,6 +375,9 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
                                 if (id % 1000 == 0):
                                     print(id)
                                     progressSi.signal.emit(id)
+                                    current_time = time.time()
+                                    temp = estimateProgress2(MODE, start, current_time)
+                                    timeSi.signal.emit(temp)
                                 stack.append(_node)
 
         if loadUi.isCancel == 1:
@@ -385,7 +398,7 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
     :param change_to_BFS: 若为True则pop,push行为改为BFS模式，即queue模式（先进先出)
     :return:
     '''
-
+    MODE = "DFS_mp"
     start=time.time()
     manager = Manager()
     combo_dict = manager.dict()
@@ -395,6 +408,7 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
     timeCost = []
     progressSi = MySignal()
     timeSi = MySignal()
+    timeSi.signal.connect(loadUi.setTimecounter)
     endEstimate.append(start)
     _node = Node()
     _node.addPiece(
@@ -461,7 +475,7 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
             # getProgress(len(result_list))
             # progressSi.signal.connect(loadUi.setProgressBar)
             # progressSi.signal.emit(len(result_list))
-            timeSi.signal.connect(loadUi.setTimecounter)
+
             timeSi.signal.emit(temp)
 
 
@@ -618,6 +632,23 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
         for item in stack:
             mp_results.append(pool.apply_async(DfsMultiProcessSubroutine, args=(p_count, combo_dict, [item], shape_list,)))
             p_count+=1
+        i = 0
+        temp = estimateProgress2(MODE, start, time.time())
+        print(temp)
+        timeSi.signal.emit(temp)
+        while(1):
+            dieTime = QTime.currentTime().addMSecs(30000)
+            while (QTime.currentTime() < dieTime):
+                QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
+            i +=0.5
+            if all([result.ready() for result in mp_results]):
+                progressSi.signal.emit(100) #100%完成
+                timeSi.signal.emit(0) #剩余时间0
+                break
+            else:
+                progressSi.signal.emit(i)
+                temp = estimateProgress2(MODE, start, time.time())
+                timeSi.signal.emit(temp)
         pool.close()
         pool.join()
         #为了防止get导致崩溃，先让他输出一次
@@ -686,7 +717,7 @@ def DfsMultiProcessSubroutine(process_num: int, combo_dict, stack, shape_list, c
             if _const_parent_node.getEdgeCount() == 5:
                 result_len += 1
                 print("Process"+str(process_num)+"#result: ", result_len)
-                save_node(_const_parent_node, str(process_num)+'_'+str(result_len), mode="DFS")
+                save_node(_const_parent_node, str(process_num)+'_'+str(result_len), mode="DFS_mp")
 
                 # estimateProgress(endEstimate[-2], endEstimate[-1], timeCost)
                 # getProgress(len(result_list))
@@ -829,6 +860,7 @@ def DfsMultiProcessSubroutine(process_num: int, combo_dict, stack, shape_list, c
                                 ######New Debug#####
                                 if id % 1000 == 0:
                                     print(id)
+
                                 ################
                                 _node.ID = id
                                 #### debug 2
@@ -850,6 +882,12 @@ def BFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
 def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces: list, loadUi: QMainWindow, change_to_greedy = False, change_to_UniCostSearch = False, heuristic = "depth"):
     if change_to_greedy:
         assert not change_to_UniCostSearch #两个change不能同时为true
+    if change_to_greedy:
+        MODE = "GREEDY"
+    elif change_to_UniCostSearch:
+        MODE = "UCS"
+    else:
+        MODE = "ASTAR"
     endEstimate = []
     timeCost = []
     combo_dict = {}
@@ -1086,6 +1124,9 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
                                 if (id % 1000 == 0):
                                     print(id)
                                     progressSi.signal.emit(id)
+                                    current_time = time.time()
+                                    temp = estimateProgress2(MODE, start, current_time)
+                                    timeSi.signal.emit(temp)
                                 prio_queue.put(PrioritizedItem(F_score, _node))
 
         #nodeEstimate = time.time()
@@ -1456,8 +1497,12 @@ class MainWindow(QMainWindow):
         self.ui.progressBar.setValue(v)
 
         # estimateProgress()
-    def setTimecounter(self,value: float):
-        self.ui.timeCounter.setText("remaining " + str(value) + " hours")
+    def setTimecounter(self, value: float):
+        print(value)
+        if value <1 :
+            self.ui.timeCounter.setText("remaining " + str(round(value*60)) + " minutes")
+        else:
+            self.ui.timeCounter.setText("remaining " + str(value) + " hours")
 
 if __name__ == "__main__":
     #combo_dict = {}  # 记录所有组合的dict
