@@ -1195,10 +1195,8 @@ class MainWindow(QMainWindow):
         self.ui.PAUSE.hide()
         self.ui.QUIT.hide()
         self.ui.NEXT.hide()
-        self.ui.comboBox_2.hide()
         self.ui.CANCEL.hide()
         self.ui.infoEdit.setPlainText("Please Chose one Algorithm.")
-        self.ui.comboBox_2.currentIndexChanged.connect(self.handletimeChange())
 
         self.buttonList = []
         self.viewList =[]
@@ -1293,13 +1291,13 @@ class MainWindow(QMainWindow):
         print(self.mode)
         print('handleSelectionChange')
 
-    def handletimeChange(self):
-        print(type(self.ui.comboBox_2.currentText))
-        if type(self.ui.comboBox_2.currentText) == "int":
-            self.slowDown = int(self.ui.comboBox_2.currentText())
-            print("Set slow down", self.slowDown)
-        else:
-            print("NO change")
+    # def handletimeChange(self):
+    #     print(type(self.ui.comboBox_2.currentText))
+    #     if type(self.ui.comboBox_2.currentText) == "int":
+    #         self.slowDown = int(self.ui.comboBox_2.currentText())
+    #         print("Set slow down", self.slowDown)
+    #     else:
+    #         print("NO change")
 
     def clearEvent(self):
         choice = QMessageBox.question(self.ui, 'confirm',
@@ -1337,7 +1335,6 @@ class MainWindow(QMainWindow):
                 self.ui.PAUSE.show()
                 self.ui.QUIT.show()
                 self.ui.NEXT.show()
-                self.ui.comboBox_2.show()
                 self.isCancel = 0
                 self.ui.comboBox.setEnabled(False)
                 self.ui.checkBox_2.setEnabled(False)
@@ -1367,7 +1364,6 @@ class MainWindow(QMainWindow):
         self.ui.PAUSE.hide()
         self.ui.QUIT.hide()
         self.ui.NEXT.hide()
-        self.ui.comboBox_2.hide()
         self.ui.CANCEL.show()
         self.ui.combArea.show()
         self.ui.SHOW.hide()
@@ -1379,7 +1375,6 @@ class MainWindow(QMainWindow):
         self.ui.PAUSE.hide()
         self.ui.QUIT.hide()
         self.ui.NEXT.hide()
-        self.ui.comboBox_2.hide()
         self.ui.CANCEL.hide()
         self.isCancel = 1
         self.cancelClick()
