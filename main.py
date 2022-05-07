@@ -1330,7 +1330,6 @@ class MainWindow(QMainWindow):
             #         if suffix == 'node':
             #             os.remove(os.path.join(test_path, file))
         else:
-            print('clear')
             if os.path.exists(self.node_path):
                 files = os.listdir(self.node_path)
                 print(self.node_path)
@@ -1339,7 +1338,6 @@ class MainWindow(QMainWindow):
                         suffix = file.split('.')[1]
                         if suffix == 'node' and suffix == 'dict':
                             os.remove(os.path.join(self.node_path, file))
-
 
     def okClick(self):
         if self.mode != 'NONE':
@@ -1437,7 +1435,8 @@ class MainWindow(QMainWindow):
             # 注意对象名称
             self.buttonList.append(QPushButton(str(pId + 1), self.ui))
             # button = QPushButton(str(pId + 1), self.ui)
-            path = './'+ self.mode+"_nodes" + '/' + 'images/'+str(pId + 1)
+            #path = './'+ self.mode+"_nodes" + '/' + 'images/'+str(pId + 1)
+            imagePath = self._path +"/"+ self.mode + "_nodes"+"/images/"+str(pId + 1)
             '''_path = os.getcwd()
             imagePath = os.path.join(os.path.join(_path, "images"), str(pId + 1))'''
             '''if os.name == "nt":
@@ -1448,7 +1447,7 @@ class MainWindow(QMainWindow):
 
             else:
                 imagePath = _path + "/images/" + str(pId + 1)'''
-            self.buttonList[pId].setStyleSheet("QPushButton{border-image: url(\"%s\"); color: white} QPushButton:hover{border: 10px double rgb(0, 0, 0);} QPushButton:pressed{background-color: border-image: url(./White.jpg)}" % path)
+            self.buttonList[pId].setStyleSheet("QPushButton{border-image: url(\"%s\"); color: white} QPushButton:hover{border: 10px double rgb(0, 0, 0);} QPushButton:pressed{background-color: border-image: url(./White.jpg)}" % imagePath)
             self.buttonList[pId].setFixedSize(QSize(200, 200))
             self.ui.typeLayout.addWidget(self.buttonList[pId], colume, row)
             self.buttonList[pId].clicked.connect(self.showComb)
@@ -1589,8 +1588,13 @@ class MainWindow(QMainWindow):
             i += 1
 
     def countFile(self):
-        self.count = len(os.listdir(self.imagesPath))
-        print(self.count)
+        if os.path.exists(self.imagesPath):
+            self.count = len(os.listdir(self.imagesPath))
+            print(self.count)
+        else:
+            print("Not exist")
+            return
+
 
     def setProgressBar(self, v):
         self.ui.progressBar.setValue(v)
