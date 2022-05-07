@@ -1392,10 +1392,7 @@ class MainWindow(QMainWindow):
         bId = self.buttonList.index(self.sender())
         _path = os.getcwd()
         _name = 'shape.dict'
-        if self.mode == 'NONE':
-            _folder = "nodes"
-        else:
-            _folder = self.mode + "_nodes"
+        _folder = self.mode + "_nodes"
         #_folder = "DFS_nodes"
         print(_path, type(_path))
         _path = os.path.join(_path, _folder, _name)
@@ -1431,7 +1428,6 @@ class MainWindow(QMainWindow):
             # 注意对象名称
             self.buttonList.append(QPushButton(str(pId + 1), self.ui))
             # button = QPushButton(str(pId + 1), self.ui)
-
             path = './'+ self.mode+"_nodes" + '/' + 'images/'+str(pId + 1)
             '''_path = os.getcwd()
             imagePath = os.path.join(os.path.join(_path, "images"), str(pId + 1))'''
