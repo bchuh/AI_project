@@ -1,5 +1,7 @@
 import os
-
+import pickle
+import time
+import glob
 from PySide2 import QtCore, QtWidgets
 from PySide2.QtCore import *#QPoint, QLineF, QPointF, QTime, QCoreApplication, QEventLoop, Qt
 from PySide2.QtWidgets import *#QApplication, QMainWindow, QGraphicsView, QGraphicsScene, QVBoxLayout, QLabel
@@ -8,12 +10,11 @@ from PySide2.QtUiTools import QUiLoader
 from node_class import Node
 from piece import Piece
 from copy import deepcopy
-import pickle
-import time
 from queue import PriorityQueue
 from util import PrioritizedItem
 from numpy import *
 from multiprocessing import Manager, Pool
+
 os.environ['QT_MAC_WANTS_LAYER'] = '1'
 # 序列化
 def serialize_instance(obj):
@@ -88,7 +89,6 @@ def load_node(file_name: str, with_suffix_and_absolute_path = False):
 
 class MySignal(QObject):
         signal = Signal(float)
-
 @Slot()
 def pauseWait():
     """算法切换 暂停"""
@@ -121,7 +121,6 @@ def estimateProgress2(mode :str, start :float, now :float):
 def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces :list, loadUi: QMainWindow, change_to_BFS=False):
     '''
     DFS 搜索模块（同时BFS模块也依赖该模块）
-
     :param view:
     :param scene:
     :param result_list:
@@ -1195,7 +1194,7 @@ class MainWindow(QMainWindow):
         self.ui.PAUSE.pressed.connect(self.pause)
         self.ui.NEXT.clicked.connect(self.resume)
         self.ui.progressBar.setValue(0)
-        self.ui.progressBar.setRange(0, 3800000)
+        self.ui.progressBar.setRange(0, 100)
         self.ui.timeCounter.setText("...")
         self.ui.PAUSE.hide()
         self.ui.QUIT.hide()
@@ -1239,6 +1238,8 @@ class MainWindow(QMainWindow):
             save_node(node, str(i), mode=self.mode)
             i += 1
         print("Saving complete")
+
+
         if self.mode != "NONE":
             self.ui.infoEdit.setPlainText(info)
         else:
@@ -1258,18 +1259,21 @@ class MainWindow(QMainWindow):
             # DFS 逻辑序列集
         elif self.mode == "BFS":
             self.ui.lineEdit.setPlaceholderText("BFS Mode")
+            self.ui.progressBar.setRange(0, 696924)
             self.ui.comboBox.setEnabled(False)
             self.combo_dict.clear()
             BFSsequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
             # BFSsequence(view, scene, result_list, shape_list, exampler_pieces)
         elif self.mode == "ASTAR":
             self.ui.lineEdit.setPlaceholderText("ASTAR Mode")
+            self.ui.progressBar.setRange(0, 689378)
             self.ui.comboBox.setEnabled(False)
             self.combo_dict.clear()
             ASTARsequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
             # ASTARsequence(view, scene, result_list, shape_list, exampler_pieces)
         elif self.mode == "GREEDY":
             self.ui.lineEdit.setPlaceholderText("GREEDY Mode")
+            self.ui.progressBar.setRange(0, 696919)
             self.ui.comboBox.setEnabled(False)
             self.combo_dict.clear()
             GreedySequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, loadUi=self, heuristic="edge")
@@ -1281,9 +1285,12 @@ class MainWindow(QMainWindow):
             UniCostSearchSequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
             # UniCostSearchSequence(view, scene, result_list, shape_list, exampler_pieces)
         elif self.mode == "NONE":
-            print("STOP")
+            print("NONE")
         else:
             raise NotImplementedError()
+
+        if self.mode != "NONE":
+            self.loadDict()
 
     def handleSelectionChange(self):
         self.mode = self.ui.comboBox.currentText()
@@ -1335,7 +1342,6 @@ class MainWindow(QMainWindow):
 
 
     def okClick(self):
-
         if self.mode != 'NONE':
             self.clearEvent()
             if self.mode != 'NONE':
@@ -1383,7 +1389,6 @@ class MainWindow(QMainWindow):
         self.ui.PAUSE.hide()
         self.ui.QUIT.hide()
         self.ui.NEXT.hide()
-        #self.ui.comboBox_2.hide()
         self.ui.CANCEL.hide()
         self.isCancel = 1
         self.cancelClick()
@@ -1488,6 +1493,100 @@ class MainWindow(QMainWindow):
             self.subviewList[wId].scale(scaleFactor, scaleFactor)
             self.subviewList[wId].setScene(self.viewList[wId])
             self.ui.combLayout.addWidget(self.widgetList[wId])
+
+    def loadDict(self):
+        nodes_dir = os.path.join(self._path, self.mode + '_nodes')
+        folder_dirs = glob.glob(nodes_dir + "/*")
+        folder_dirs.reverse()
+        combo_dict = {}
+        shape_dict = {}
+        organize = True
+        if organize:
+            i = 1
+            for dir in folder_dirs:
+                app.processEvents()
+                if ".py" in dir:
+                    continue
+                if ".dict" in dir:
+                    continue
+                if os.path.isdir(dir):
+                    continue
+                self.ui.lineEdit.setText(str(i))
+                _node: Node = load_node(dir, with_suffix_and_absolute_path=True)
+                angles_encoding = _node.encodeAngles(self.ui.mainView)
+                if angles_encoding not in shape_dict:
+                    shape_dict[angles_encoding] = [_node]
+                else:
+                    print("collide")
+                    shape_dict[angles_encoding].append(_node)
+                _node.paint(self.scene)
+                self.ui.mainView.show()
+                self.ui.mainView.update()
+                self.scene.clear()  # not working for some reason
+                i += 1
+                print(angles_encoding)
+                print(len(shape_dict))
+            ###########
+            _name = 'shape.dict'
+            _folder = self.mode + "_nodes"
+            _path = os.path.join(self._path, _folder, _name)
+            if os.path.exists(_path):
+                with open(_path, 'wb') as f:
+                    pickle.dump(shape_dict, f)
+            else:
+                return
+            ############
+            print("------Parsing complete---------")
+            print("Found ", len(shape_dict), " types of shape!")
+        else:
+            shape_dict = {}
+
+        #########
+        _name = 'shape.dict'
+        if self.mode == 'None':
+            _folder = "nodes"
+        else:
+            _folder = self.mode + "_nodes"
+        node_path = os.path.join(self._path, _folder)
+        _path = os.path.join(node_path, _name)
+
+        if os.path.exists(_path):
+            with open(_path, 'rb') as f:
+                shape_dict = pickle.load(f)
+        else:
+            return
+        i = 1
+        # 在xxx_nodes中建立image文件夹
+        _path = os.getcwd()
+        _folder = "images"
+        _path = os.path.join(_path, self.mode + "_nodes")
+        _path = os.path.join(_path, _folder)
+        if not os.path.exists(_path):
+            os.mkdir(_path)
+        for key in shape_dict.keys():
+            app.processEvents()
+            _node = shape_dict[key][0]
+            _node.paint(self.scene)
+            self.ui.mainView.show()
+            self.ui.mainView.update()
+            #####
+            image = QImage(self.scene.sceneRect().width(), self.scene.sceneRect().height(), QImage.Format_RGB888)
+            painter = QPainter(image)
+            self.scene.render(painter, image.rect())
+            painter.end()
+            _name = str(i) + '.jpg'
+            _folder = "images"
+            node_path = os.path.join(self._path, self.mode + "_nodes")
+            image_path = os.path.join(node_path, _folder)
+            image_path = os.path.join(image_path, _name)
+            image.save(image_path)
+            #####
+            dieTime = QTime.currentTime().addMSecs(10)
+            while (QTime.currentTime() < dieTime):
+                QCoreApplication.processEvents(QEventLoop.AllEvents, 50)
+            self.scene.clear()
+            self.ui.mainView.update()
+            i += 1
 
     def countFile(self):
         self.count = len(os.listdir(self.imagesPath))
