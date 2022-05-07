@@ -63,30 +63,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QComboBox" name="comboBox_2">
-        <item>
-         <property name="text">
-          <string>Set time to slow</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>5</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>10</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>100</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item>
        <widget class="QPushButton" name="QUIT">
         <property name="text">
          <string>Quit Current AL</string>
@@ -110,7 +86,7 @@
       <item>
        <widget class="QCheckBox" name="checkBox_3">
         <property name="text">
-         <string>Run bey steps</string>
+         <string>Run by steps</string>
         </property>
        </widget>
       </item>
@@ -187,7 +163,7 @@
          <x>0</x>
          <y>0</y>
          <width>867</width>
-         <height>572</height>
+         <height>532</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -244,7 +220,7 @@
          <x>0</x>
          <y>0</y>
          <width>1148</width>
-         <height>105</height>
+         <height>145</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_3">

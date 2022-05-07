@@ -1156,7 +1156,17 @@ class MainWindow(QMainWindow):
         # 从 UI 定义中动态 创建一个相应的窗口对象
         # 注意：里面的控件对象也成为窗口对象的属性了
         # 比如 self.ui.button , self.ui.textEdit
-        self.uiPath = os.path.join(os.getcwd(), "GUI.ui")
+
+        # 每个算法的文件夹现在有独立的images文件夹
+        self.mode = "NONE"
+        # self.path = os.path.join(os.getcwd(), "images")
+        self._path = os.getcwd()
+        _folder = "images"
+        self.node_path = os.path.join(self._path, self.mode + "_nodes")
+        self.images_path = os.path.join(self.node_path, _folder)
+        self.imagesPath = self.images_path
+        ###
+        self.uiPath = os.path.join(self._path, "GUI.ui")
         self.ui = QUiLoader().load(self.uiPath)
         #self.ui = QUiLoader().load('GUI.ui')
         screen = QGuiApplication.primaryScreen().geometry()
@@ -1170,7 +1180,7 @@ class MainWindow(QMainWindow):
         self.ui.mainView.scale(scale_factor, scale_factor)
         self.ui.combArea.hide()
         self.ui.OK.clicked.connect(self.okClick)
-        self.ui.OK.clicked.connect(self.SetUi)
+        #self.ui.OK.clicked.connect(self.SetUi)
         #self.ui.OK.clicked.connect(pauseWait)
         self.ui.CANCEL.clicked.connect(self.cancelClick)
         self.ui.SHOW.clicked.connect(self.showClick)
@@ -1197,16 +1207,6 @@ class MainWindow(QMainWindow):
         self.isCancel = 0
         self.count = 0
         self.viewNum = 0
-        #每个算法的文件夹现在有独立的images文件夹
-        self.mode = "NONE"
-        #self.path = os.path.join(os.getcwd(), "images")
-        _path = os.getcwd()
-        _folder = "images"
-        _path = os.path.join(_path, self.mode + "_nodes")
-        _path = os.path.join(_path, _folder)
-        self.imagesPath = _path
-        ###
-
         self.is_paused = False
         self.nextStep = False
         self.combo_dict = {}
@@ -1222,36 +1222,6 @@ class MainWindow(QMainWindow):
             exampler_pieces.append(Piece(shape_list[i], i, view=self.ui.mainView))
         assert self.mode in ["DFS", "BFS", "ASTAR", "GREEDY", "UCS", "NONE"]
         self.setAlgorithms(result_list, shape_list, exampler_pieces)
-        #self.combo_dict = {}
-        # print(self.mode)
-        # if self.mode == "DFS":
-        #     self.ui.lineEdit.setPlaceholderText("DFS Mode")
-        #     DFSsequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
-        #     self.ui.comboBox.setEnabled(False)
-        #     # DfsMultiProcess(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
-        #
-        #     self.ui.lineEdit.setPlaceholderText("cancle")
-        #
-        #     # DFSsequence(view, scene, result_list, shape_list, exampler_pieces, self)
-        #     # DFS 逻辑序列集
-        # elif self.mode == "BFS":
-        #     self.ui.lineEdit.setPlaceholderText("BFS Mode")
-        #     BFSsequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
-        #     # BFSsequence(view, scene, result_list, shape_list, exampler_pieces)
-        # elif self.mode == "ASTAR":
-        #     self.ui.lineEdit.setPlaceholderText("ASTAR Mode")
-        #     ASTARsequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
-        #     # ASTARsequence(view, scene, result_list, shape_list, exampler_pieces)
-        # elif self.mode == "GREEDY":
-        #     self.ui.lineEdit.setPlaceholderText("GREEDY Mode")
-        #     GreedySequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces)
-        #     # GreedySequence(view, scene, result_list, shape_list, exampler_pieces)
-        # elif self.mode == "UCS":
-        #     self.ui.lineEdit.setPlaceholderText("UCS Mode")
-        #     UniCostSearchSequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces)
-        #     # UniCostSearchSequence(view, scene, result_list, shape_list, exampler_pieces)
-        # else:
-        #     raise NotImplementedError()
 
         end = time.time()
         info = str(len(result_list)) + " combination found!\n" + "Stored combinations: " + str(len(self.combo_dict)) + "\nThe time of execution is : " + str((end - start) / 60 / 60) + "hours" + "\nsaving all the nodes...\n"
@@ -1298,13 +1268,13 @@ class MainWindow(QMainWindow):
             self.ui.lineEdit.setPlaceholderText("GREEDY Mode")
             self.ui.comboBox.setEnabled(False)
             self.combo_dict.clear()
-            GreedySequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces)
+            GreedySequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
             # GreedySequence(view, scene, result_list, shape_list, exampler_pieces)
         elif self.mode == "UCS":
             self.ui.lineEdit.setPlaceholderText("UCS Mode")
             self.ui.comboBox.setEnabled(False)
             self.combo_dict.clear()
-            UniCostSearchSequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces)
+            UniCostSearchSequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
             # UniCostSearchSequence(view, scene, result_list, shape_list, exampler_pieces)
         elif self.mode == "NONE":
             print("STOP")
@@ -1313,14 +1283,15 @@ class MainWindow(QMainWindow):
 
     def handleSelectionChange(self):
         self.mode = self.ui.comboBox.currentText()
-        _path = os.getcwd()
+        #_path = os.getcwd()
         _folder = "images"
-        _path = os.path.join(_path, self.mode + "_nodes")
-        _path = os.path.join(_path, _folder)
-        self.path = _path
+        self.node_path = os.path.join(self._path, self.mode + "_nodes")
+        self.images_path = os.path.join(self.node_path, _folder)
+        #TODO 这是干啥的来着
+        self.path = self.images_path
         ###
-        print("changed")
         print(self.mode)
+        print('handleSelectionChange')
 
     def handletimeChange(self):
         print(type(self.ui.comboBox_2.currentText))
@@ -1330,18 +1301,49 @@ class MainWindow(QMainWindow):
         else:
             print("NO change")
 
+    def clearEvent(self):
+        choice = QMessageBox.question(self.ui, 'confirm',
+                                      'Node of this algorithm will be remove!\n\n(Ignored this message if this is your first time using current algorithm.)',
+                                      QMessageBox.Ok, QMessageBox.Cancel)
+        if choice == QMessageBox.Cancel:
+            #self.mode = "NONE"
+            self.ui.comboBox.setCurrentIndex(0)
+            # Test
+            # _folder = "test_nodes"
+            # test_path = os.path.join(self._path,_folder)
+            #
+            # files = os.listdir(test_path)
+            # for file in files:
+            #     if '.' in file:
+            #         suffix = file.split('.')[1]
+            #         if suffix == 'node':
+            #             os.remove(os.path.join(test_path, file))
+        else:
+            print('clear')
+            files = os.listdir(self.node_path)
+            print(self.node_path)
+            for file in files:
+                if '.' in file:
+                    suffix = file.split('.')[1]
+                    if suffix == 'node' and suffix == 'dict':
+                        os.remove(os.path.join(self.node_path, file))
+
+
     def okClick(self):
 
         if self.mode != 'NONE':
-            self.ui.PAUSE.show()
-            self.ui.QUIT.show()
-            self.ui.NEXT.show()
-            self.ui.comboBox_2.show()
-            self.isCancel = 0
-            self.ui.comboBox.setEnabled(False)
-            self.ui.checkBox_2.setEnabled(False)
-            print("OK")
+            self.clearEvent()
+            if self.mode != 'NONE':
+                self.ui.PAUSE.show()
+                self.ui.QUIT.show()
+                self.ui.NEXT.show()
+                self.ui.comboBox_2.show()
+                self.isCancel = 0
+                self.ui.comboBox.setEnabled(False)
+                self.ui.checkBox_2.setEnabled(False)
+                print("OK")
             # self.ui.mainView.show()
+        self.SetUi()
 
     def cancelClick(self):
         self.ui.comboBox.setEnabled(True)
@@ -1390,13 +1392,12 @@ class MainWindow(QMainWindow):
 
     def showComb(self):
         bId = self.buttonList.index(self.sender())
-        _path = os.getcwd()
+        # self._path = os.getcwd()
         _name = 'shape.dict'
         _folder = self.mode + "_nodes"
         #_folder = "DFS_nodes"
-        print(_path, type(_path))
-        _path = os.path.join(_path, _folder, _name)
-        dictTest = open(_path, 'rb')
+        dict_path = os.path.join(self._path, _folder, _name)
+        dictTest = open(dict_path, 'rb')
         dataTest = pickle.load(dictTest)
         i = 0
         #print(dataTest)
@@ -1406,8 +1407,7 @@ class MainWindow(QMainWindow):
             # 储存的是列表
             if bId == i:
                 temp = dataTest[key]
-                print(bId , i)
-            # node调用绘图？
+                print(bId, i)
             # _node.paint(scene)
                 self.viewNum = temp
                 self.addWidget()
@@ -1501,62 +1501,13 @@ class MainWindow(QMainWindow):
             self.ui.timeCounter.setText("remaining " + str(value) + " hours")
 
 if __name__ == "__main__":
-    #combo_dict = {}  # 记录所有组合的dict
     scale_factor = 1
     QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_ShareOpenGLContexts)
     start = time.time()
     app = QApplication([])
     mainwindow = MainWindow()
-    #view = QGraphicsView()
-    #view.setScene(scene)
-    #view.show()
-    #view.showMaximized()
     mainwindow.ui.show()
     mainwindow.ui.showMaximized()
     mainwindow.SetUi()
-
-    #view.scale(scale_factor, scale_factor)
-    #view.hide()
-    # result_list = []
-    # shape_list = [0, 0, 1, 2, 2, 3, 4]  # shape ID of 7 pieces
-    # exampler_pieces = []  # 创建7个块的样板，用来查边长
-    # for i in range(len(shape_list)):
-    #     exampler_pieces.append(Piece(shape_list[i], i, view=view))
-        #exampler_pieces.append(Piece(shape_list[i], i, view=view))
-    # mode="ASTAR"
-    #
-    # assert mode in ["DFS", "BFS", "ASTAR", "GREEDY", "UCS"]
-    #
-    # if mode == "DFS":
-    #     DFSsequence(mainwindow, scene, result_list, shape_list, exampler_pieces)
-    #     #DFSsequence(view, scene, result_list, shape_list, exampler_pieces)
-    #     #DFS 逻辑序列集
-    # elif mode == "BFS":
-    #     BFSsequence(mainwindow, scene, result_list, shape_list, exampler_pieces)
-    #     #BFSsequence(view, scene, result_list, shape_list, exampler_pieces)
-    # elif mode == "ASTAR":
-    #     ASTARsequence(mainwindow.graphicsView, scene, result_list, shape_list, exampler_pieces)
-    #     #ASTARsequence(view, scene, result_list, shape_list, exampler_pieces)
-    # elif mode == "GREEDY":
-    #     GreedySequence(mainwindow, scene, result_list, shape_list, exampler_pieces)
-    #     #GreedySequence(view, scene, result_list, shape_list, exampler_pieces)
-    # elif mode == "UCS":
-    #     UniCostSearchSequence(mainwindow, scene, result_list, shape_list, exampler_pieces)
-    #     #UniCostSearchSequence(view, scene, result_list, shape_list, exampler_pieces)
-    # else:
-    #     raise NotImplementedError()
-    #
-    #
-    # end=time.time()
-    # print(len(result_list), "combination found!")
-    # print("Stored combinations: ", len(combo_dict))
-    # print("The time of execution is :", (end - start)/60/60, "hours")
-    # print("saving all the nodes...")
-    # #save all results:
-    # i=1
-    # for node in result_list:
-    #     save_node(node, str(i), mode=mode)
-    #     i+=1
-    # print("Saving complete")
     app.exec_()
 
