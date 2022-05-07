@@ -209,7 +209,7 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
             #
             iter_count += 1  # 第几个组合
             if _const_parent_node.getEdgeCount() == 5:
-                print("#result: ", len(result_list))
+                loadUi.ui.infoEdit.append("#result: "+ len(result_list)+", ...")
                 result_list.append(_const_parent_node)
 
                 # nodeEstimate = time.time()
@@ -626,8 +626,10 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
                             stack.append(_node)
     mp_results = []
     p_count = 0
-    print(len(stack), " initial branches created. Dispatching to process pool.")
-    print("Engaging multi-process search!")
+    loadUi.ui.infoEdit.append(len(stack)+" initial branches created. Dispatching to process pool.\n")
+    loadUi.ui.infoEdit.append("Engaging multi-process search!")
+    #print(len(stack), " initial branches created. Dispatching to process pool.")
+    #print("Engaging multi-process search!")
     with Pool(4) as pool:
         for item in stack:
             mp_results.append(pool.apply_async(DfsMultiProcessSubroutine, args=(p_count, combo_dict, [item], shape_list,)))
@@ -640,8 +642,10 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
             dieTime = QTime.currentTime().addMSecs(30000)
             while (QTime.currentTime() < dieTime):
                 QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
+            temp_list = [result.ready() for result in mp_results]
+            loadUi.ui.infoEdit.append("Finished "+str(temp_list.count(True))+" processes...\n")
             i +=0.5
-            if all([result.ready() for result in mp_results]):
+            if all(temp_list):
                 progressSi.signal.emit(100) #100%完成
                 timeSi.signal.emit(0) #剩余时间0
                 break
@@ -653,11 +657,11 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
         pool.join()
         #为了防止get导致崩溃，先让他输出一次
         end = time.time()
-        print("The time of execution is :", (end - start) / 60 / 60, "hours")
+        loadUi.ui.infoEdit.append("-----------\nThe time of execution is :" + str((end - start) / 60 / 60)+ "hours\n")
         result_count = 0
         for result in mp_results:
             result_count += result.get()
-        print(str(result_count)+" results found!")
+        loadUi.ui.infoEdit.append(str(result_count)+" results found!")
 
 
 def DfsMultiProcessSubroutine(process_num: int, combo_dict, stack, shape_list, change_to_BFS =False):
@@ -960,7 +964,7 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
 
             if _const_parent_node.getEdgeCount() == 5:
                 result_list.append(_const_parent_node)
-                print("#result: ", len(result_list))
+                loadUi.ui.infoEdit.append("#result: "+ str(len(result_list))+", ...")
                 label.setText("<font size=300 color=white>" + str(len(result_list)) + "</font>")
                 if (len(result_list)==856):
                     break
@@ -1181,7 +1185,7 @@ class MainWindow(QMainWindow):
         self.ui.NEXT.clicked.connect(self.resume)
         self.ui.progressBar.setValue(0)
         self.ui.progressBar.setRange(0, 3800000)
-        self.ui.timeCounter.setText("Over 12 hours")
+        self.ui.timeCounter.setText("...")
         self.ui.PAUSE.hide()
         self.ui.QUIT.hide()
         self.ui.NEXT.hide()
@@ -1217,7 +1221,7 @@ class MainWindow(QMainWindow):
         result_list = []
         shape_list = [0, 0, 1, 2, 2, 3, 4]  # shape ID of 7 pieces
         exampler_pieces = []  # 创建7个块的样板，用来查边长
-        self.ui.infoEdit.setPlainText("running...")
+        self.ui.infoEdit.setPlainText("running...\n-------------")
         for i in range(len(shape_list)):
             exampler_pieces.append(Piece(shape_list[i], i, view=self.ui.mainView))
         assert self.mode in ["DFS", "BFS", "ASTAR", "GREEDY", "UCS", "NONE"]
@@ -1252,12 +1256,12 @@ class MainWindow(QMainWindow):
         #     # UniCostSearchSequence(view, scene, result_list, shape_list, exampler_pieces)
         # else:
         #     raise NotImplementedError()
-
-        end = time.time()
-        info = str(len(result_list)) + " combination found!\n" + "Stored combinations: " + str(len(self.combo_dict)) + "\nThe time of execution is : " + str((end - start) / 60 / 60) + "hours" + "\nsaving all the nodes...\n"
-        print(len(result_list), "combination found!")
-        print("Stored combinations: ", len(self.combo_dict))
-        print("The time of execution is :", (end - start) / 60 / 60, "hours")
+        if not (self.ui.checkBox_2.isChecked() == True and self.mode == "DFS"):# 多进程的话自己内部输出，不参与统一输出
+            end = time.time()
+            info = str(len(result_list)) + " combination found!\n" + "Stored combinations: " + str(len(self.combo_dict)) + "\nThe time of execution is : " + str((end - start) / 60 / 60) + "hours" + "\nsaving all the nodes...\n"
+            print(len(result_list), "combination found!")
+            print("Stored combinations: ", len(self.combo_dict))
+            print("The time of execution is :", (end - start) / 60 / 60, "hours")
         print("saving all the nodes...")
         # save all results:
         i = 1
@@ -1298,7 +1302,7 @@ class MainWindow(QMainWindow):
             self.ui.lineEdit.setPlaceholderText("GREEDY Mode")
             self.ui.comboBox.setEnabled(False)
             self.combo_dict.clear()
-            GreedySequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces)
+            GreedySequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, loadUi=self, heuristic="edge")
             # GreedySequence(view, scene, result_list, shape_list, exampler_pieces)
         elif self.mode == "UCS":
             self.ui.lineEdit.setPlaceholderText("UCS Mode")
