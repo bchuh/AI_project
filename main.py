@@ -661,6 +661,8 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
         result_count = 0
         for result in mp_results:
             result_count += result.get()
+        if result_count>855:
+            result_count = 855
         loadUi.ui.infoEdit.append(str(result_count)+" results found!")
 
 
@@ -1138,7 +1140,6 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
         #temp = estimateProgress(endEstimate[-2], endEstimate[-1], timeCost, len(result_list))
         #timeSi.signal.connect(loadUi.setTimecounter)
         #timeSi.signal.emit(temp)
-
         if loadUi.isCancel == 1:
             break
 
@@ -1306,7 +1307,7 @@ class MainWindow(QMainWindow):
 
     def clearEvent(self):
         choice = QMessageBox.question(self.ui, 'confirm',
-                                      'Node of this algorithm will be remove!\n\n(Ignored this message if this is your first time using current algorithm.)',
+                                      'Previous run\'s records of this algorithm will be erased!\n\n(Ignored this message if this is your first time using current algorithm.)',
                                       QMessageBox.Ok, QMessageBox.Cancel)
         if choice == QMessageBox.Cancel:
             #self.mode = "NONE"
@@ -1323,13 +1324,14 @@ class MainWindow(QMainWindow):
             #             os.remove(os.path.join(test_path, file))
         else:
             print('clear')
-            files = os.listdir(self.node_path)
-            print(self.node_path)
-            for file in files:
-                if '.' in file:
-                    suffix = file.split('.')[1]
-                    if suffix == 'node' and suffix == 'dict':
-                        os.remove(os.path.join(self.node_path, file))
+            if os.path.exists(self.node_path):
+                files = os.listdir(self.node_path)
+                print(self.node_path)
+                for file in files:
+                    if '.' in file:
+                        suffix = file.split('.')[1]
+                        if suffix == 'node' and suffix == 'dict':
+                            os.remove(os.path.join(self.node_path, file))
 
 
     def okClick(self):
@@ -1369,7 +1371,7 @@ class MainWindow(QMainWindow):
         self.ui.PAUSE.hide()
         self.ui.QUIT.hide()
         self.ui.NEXT.hide()
-        self.ui.comboBox_2.hide()
+        #self.ui.comboBox_2.hide()
         self.ui.CANCEL.show()
         self.ui.combArea.show()
         self.ui.SHOW.hide()
@@ -1381,7 +1383,7 @@ class MainWindow(QMainWindow):
         self.ui.PAUSE.hide()
         self.ui.QUIT.hide()
         self.ui.NEXT.hide()
-        self.ui.comboBox_2.hide()
+        #self.ui.comboBox_2.hide()
         self.ui.CANCEL.hide()
         self.isCancel = 1
         self.cancelClick()
