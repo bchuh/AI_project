@@ -379,6 +379,7 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
                                     current_time = time.time()
                                     temp = estimateProgress2(MODE, start, current_time)
                                     timeSi.signal.emit(temp)
+                                    loadUi.update()
                                 stack.append(_node)
 
         if loadUi.isCancel == 1:
@@ -633,17 +634,26 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
     #print(len(stack), " initial branches created. Dispatching to process pool.")
     #print("Engaging multi-process search!")
     with Pool(4) as pool:
+        msg_cancel = manager.Value('d', 0)
         for item in stack:
-            mp_results.append(pool.apply_async(DfsMultiProcessSubroutine, args=(p_count, combo_dict, [item], shape_list,)))
+            mp_results.append(pool.apply_async(DfsMultiProcessSubroutine, args=(p_count, combo_dict, [item], shape_list, msg_cancel,)))
             p_count+=1
         i = 0
         temp = estimateProgress2(MODE, start, time.time())
-        print(temp)
         timeSi.signal.emit(temp)
         while(1):
+
             dieTime = QTime.currentTime().addMSecs(30000)
             while (QTime.currentTime() < dieTime):
                 QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
+                dieTime2 = QTime.currentTime().addMSecs(50)
+                while (QTime.currentTime() < dieTime2):
+                    QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
+
+                if loadUi.isCancel == 1:
+                    msg_cancel.set(1)
+                    loadUi.ui.infoEdit.append("Cancelled!")
+                    break
             temp_list = [result.ready() for result in mp_results]
             loadUi.ui.infoEdit.append("Finished "+str(temp_list.count(True))+" processes...\n")
             i +=0.5
@@ -668,13 +678,15 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
         loadUi.ui.infoEdit.append(str(result_count)+" results found!")
 
 
-def DfsMultiProcessSubroutine(process_num: int, combo_dict, stack, shape_list, change_to_BFS =False):
+def DfsMultiProcessSubroutine(process_num: int, combo_dict, stack, shape_list, isCancel, change_to_BFS =False):
     scale_factor = 1
     id = 0
     #progressSi = MySignal()
     #progressSi.signal.connect(loadUi.setProgressBar)
     result_len = 0
     while len(stack) != 0:
+        if isCancel.get() == 1:
+            break
         # 当前分支号码
         #app.processEvents()
         if not change_to_BFS:
@@ -901,6 +913,7 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
     combo_dict = {}
     progressSi = MySignal()
     timeSi = MySignal()
+    timeSi.signal.connect(loadUi.setTimecounter)
     start = time.time()
     endEstimate.append(start)
     label = QLabel()
@@ -1239,12 +1252,14 @@ class MainWindow(QMainWindow):
         assert self.mode in ["DFS", "BFS", "ASTAR", "GREEDY", "UCS", "NONE"]
         self.setAlgorithms(result_list, shape_list, exampler_pieces)
 
-        if not (self.ui.checkBox_2.isChecked() == True and self.mode == "DFS"):# 多进程的话自己内部输出，不参与统一输出
+        if not (self.ui.checkBox_2.isChecked() == True and self.mode == "DFS" and self.isCancel != 1):# 多进程的话自己内部输出，不参与统一输出
             end = time.time()
             info = "855 combinations found!\n" +"53 shapes found!\n"+ "searched nodes: " + str(len(self.combo_dict)) + "\nThe time of execution is : " + str((end - start) / 60 / 60) + "hours" + "\nsaving all the nodes...\n"
             print(len(result_list), "combination found!")
             print("Stored combinations: ", len(self.combo_dict))
             print("The time of execution is :", (end - start) / 60 / 60, "hours")
+        if self.isCancel == 1:
+            info = "Cancelled!"
         print("saving all the nodes...")
         # save all results:
         i = 1
@@ -1312,7 +1327,7 @@ class MainWindow(QMainWindow):
         else:
             raise NotImplementedError()
 
-        if self.mode != "NONE":
+        if self.mode != "NONE" and self.isCancel != 1:
             self.loadDict()
             self.ui.infoEdit.append("Saving complete!")
             self.ui.progressBar.setValue(self.ui.progressBar.maximum())
@@ -1538,9 +1553,7 @@ class MainWindow(QMainWindow):
                 if os.path.isdir(dir):
                     continue
                 if i <=855:
-                    self.ui.lineEdit.setText(str(i))
-                else:
-                    self.ui.lineEdit.setText("855")
+                    self.ui.infoEdit.append("parsing record: "+str(i)+"/855")
                 _node: Node = load_node(dir, with_suffix_and_absolute_path=True)
                 angles_encoding = _node.encodeAngles(self.ui.mainView)
                 if angles_encoding not in shape_dict:
