@@ -114,9 +114,10 @@ def estimateProgress(statrEstimate: int, endEstimate: int, timeCost: list, listN
 def estimateProgress2(mode :str, start :float, now :float):
     mode_names = ["DFS_mp", "DFS", "BFS", "ASTAR", "GREEDY", "UCS"]
     assert mode in mode_names
-    time_record = [0.832, 2, 1.8, 1.7, 2, 2]
+    time_record = [0.832, 2.05, 1.8, 1.7, 1.76, 2]
     total_time = time_record[mode_names.index(mode)]
     used_time = (now-start)/60/60
+    result =total_time-used_time
     return total_time-used_time
 
 def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces :list, loadUi: QMainWindow, change_to_BFS=False):
@@ -209,7 +210,7 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
             #
             iter_count += 1  # 第几个组合
             if _const_parent_node.getEdgeCount() == 5:
-                loadUi.ui.infoEdit.append("#result: "+ len(result_list)+", ...")
+                loadUi.ui.infoEdit.append("#result: "+ str(len(result_list))+", ...")
                 result_list.append(_const_parent_node)
 
                 # nodeEstimate = time.time()
@@ -1240,7 +1241,7 @@ class MainWindow(QMainWindow):
 
         if not (self.ui.checkBox_2.isChecked() == True and self.mode == "DFS"):# 多进程的话自己内部输出，不参与统一输出
             end = time.time()
-            info = str(len(result_list)) + " combination found!\n" + "Stored combinations: " + str(len(self.combo_dict)) + "\nThe time of execution is : " + str((end - start) / 60 / 60) + "hours" + "\nsaving all the nodes...\n"
+            info = "855 combinations found!\n" +"53 shapes found!\n"+ "searched nodes: " + str(len(self.combo_dict)) + "\nThe time of execution is : " + str((end - start) / 60 / 60) + "hours" + "\nsaving all the nodes...\n"
             print(len(result_list), "combination found!")
             print("Stored combinations: ", len(self.combo_dict))
             print("The time of execution is :", (end - start) / 60 / 60, "hours")
@@ -1268,8 +1269,9 @@ class MainWindow(QMainWindow):
                 self.ui.progressBar.setRange(0, 696914)
                 DfsMultiProcess(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
             else:
+                self.ui.progressBar.setRange(0, 696914)
                 DFSsequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
-            self.ui.lineEdit.setPlaceholderText("cancle")
+            #self.ui.lineEdit.setPlaceholderText("cancle")
             # DFSsequence(view, scene, result_list, shape_list, exampler_pieces, self)
             # DFS 逻辑序列集
         elif self.mode == "BFS":
@@ -1311,6 +1313,10 @@ class MainWindow(QMainWindow):
 
         if self.mode != "NONE":
             self.loadDict()
+            self.ui.infoEdit.append("Saving complete!")
+            self.ui.progressBar.setValue(self.ui.progressBar.maximum())
+            self.ui.timeCounter.setText("Complete!")
+
 
     def handleSelectionChange(self):
         self.mode = self.ui.comboBox.currentText()
@@ -1456,7 +1462,7 @@ class MainWindow(QMainWindow):
             self.buttonList.append(QPushButton(str(pId + 1), self.ui))
             # button = QPushButton(str(pId + 1), self.ui)
             #path = './'+ self.mode+"_nodes" + '/' + 'images/'+str(pId + 1)
-            imagePath = self._path +"/"+ self.mode + "_nodes"+"/images/"+str(pId + 1)
+            imagePath = "./"+ self.mode + "_nodes"+"/images/"+str(pId + 1)
             '''_path = os.getcwd()
             imagePath = os.path.join(os.path.join(_path, "images"), str(pId + 1))'''
             '''if os.name == "nt":
@@ -1530,7 +1536,10 @@ class MainWindow(QMainWindow):
                     continue
                 if os.path.isdir(dir):
                     continue
-                self.ui.lineEdit.setText(str(i))
+                if i <=855:
+                    self.ui.lineEdit.setText(str(i))
+                else:
+                    self.ui.lineEdit.setText("855")
                 _node: Node = load_node(dir, with_suffix_and_absolute_path=True)
                 angles_encoding = _node.encodeAngles(self.ui.mainView)
                 if angles_encoding not in shape_dict:
@@ -1549,23 +1558,19 @@ class MainWindow(QMainWindow):
             _name = 'shape.dict'
             _folder = self.mode + "_nodes"
             _path = os.path.join(self._path, _folder, _name)
-            if os.path.exists(_path):
-                with open(_path, 'wb') as f:
-                    pickle.dump(shape_dict, f)
-            else:
-                return
+
+            with open(_path, 'wb') as f:
+                pickle.dump(shape_dict, f)
+
             ############
             print("------Parsing complete---------")
-            print("Found ", len(shape_dict), " types of shape!")
+            self("Found ", len(shape_dict), " types of shape!")
         else:
             shape_dict = {}
 
         #########
         _name = 'shape.dict'
-        if self.mode == 'None':
-            _folder = "nodes"
-        else:
-            _folder = self.mode + "_nodes"
+        _folder = self.mode + "_nodes"
         node_path = os.path.join(self._path, _folder)
         _path = os.path.join(node_path, _name)
 
@@ -1608,6 +1613,8 @@ class MainWindow(QMainWindow):
             i += 1
 
     def countFile(self):
+        if not os.path.exists(self.imagesPath):
+            self.loadDict()
         if os.path.exists(self.imagesPath):
             self.count = len(os.listdir(self.imagesPath))
             print(self.count)
@@ -1617,15 +1624,18 @@ class MainWindow(QMainWindow):
 
 
     def setProgressBar(self, v):
-        self.ui.progressBar.setValue(v)
+        self.ui.progressBar.setValue(int(v))
 
         # estimateProgress()
     def setTimecounter(self, value: float):
         print(value)
         if value <1 :
-            self.ui.timeCounter.setText("remaining " + str(round(value*60)) + " minutes")
+            value = round(value*60)
+            if value < 2:
+                value = 2
+            self.ui.timeCounter.setText("remaining " + str(value) + " minutes")
         else:
-            self.ui.timeCounter.setText("remaining " + str(value) + " hours")
+            self.ui.timeCounter.setText("remaining " + str(round(value,5)) + " hours")
 
 if __name__ == "__main__":
     scale_factor = 1
