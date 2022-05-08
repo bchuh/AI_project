@@ -2,6 +2,7 @@ import os
 import pickle
 import time
 import glob
+from GUI import Ui_MainWindow
 from PySide2 import QtCore, QtWidgets
 from PySide2.QtCore import *#QPoint, QLineF, QPointF, QTime, QCoreApplication, QEventLoop, Qt
 from PySide2.QtWidgets import *#QApplication, QMainWindow, QGraphicsView, QGraphicsScene, QVBoxLayout, QLabel
@@ -625,7 +626,8 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
                             stack.append(_node)
     mp_results = []
     p_count = 0
-    loadUi.ui.infoEdit.append(len(stack)+" initial branches created. Dispatching to process pool.\n")
+    info = str(len(stack)) + " initial branches created. Dispatching to process pool.\n"
+    loadUi.ui.infoEdit.append(info)
     loadUi.ui.infoEdit.append("Engaging multi-process search!")
     #print(len(stack), " initial branches created. Dispatching to process pool.")
     #print("Engaging multi-process search!")
@@ -1156,11 +1158,13 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
+
         # 从文件中加载UI定义
         # 从 UI 定义中动态 创建一个相应的窗口对象
         # 注意：里面的控件对象也成为窗口对象的属性了
         # 比如 self.ui.button , self.ui.textEdit
-
+        # self.ui = Ui_MainWindow()
+        #self.ui.setupUi(self)
         # 每个算法的文件夹现在有独立的images文件夹
         self.mode = "NONE"
         # self.path = os.path.join(os.getcwd(), "images")
@@ -1170,9 +1174,16 @@ class MainWindow(QMainWindow):
         images_path = os.path.join(self.node_path, _folder)
         self.imagesPath = images_path
         ###
+        # self.ui = Ui_MainWindow()
+        # self.ui.setupUi(self)
+        # self.ui.retranslateUi(self)
         self.uiPath = os.path.join(self._path, "GUI.ui")
-        self.ui = QUiLoader().load(self.uiPath)
-        #self.ui = QUiLoader().load('GUI.ui')
+        # cafeteriaMenuUi = QtCore.QFile(":" + self.uiPath)
+        ui_file = QFile(self.uiPath)
+        ui_file.open(QFile.ReadOnly)
+        self.ui = QUiLoader().load(ui_file, self)
+        #self.ui = QUiLoader().load(self.uiPath, self)
+
         screen = QGuiApplication.primaryScreen().geometry()
         self.width = screen.width()
         self.height = screen.height()
@@ -1201,6 +1212,8 @@ class MainWindow(QMainWindow):
         self.ui.NEXT.hide()
         self.ui.CANCEL.hide()
         self.ui.infoEdit.setPlainText("Please Chose one Algorithm.")
+
+
 
         self.buttonList = []
         self.viewList =[]
@@ -1251,6 +1264,8 @@ class MainWindow(QMainWindow):
             self.ui.comboBox.setEnabled(False)
             self.combo_dict.clear()
             if self.ui.checkBox_2.isChecked() == True:
+                self.ui.progressBar.setValue(0)
+                self.ui.progressBar.setRange(0, 696914)
                 DfsMultiProcess(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
             else:
                 DFSsequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
@@ -1259,6 +1274,7 @@ class MainWindow(QMainWindow):
             # DFS 逻辑序列集
         elif self.mode == "BFS":
             self.ui.lineEdit.setPlaceholderText("BFS Mode")
+            self.ui.progressBar.setValue(0)
             self.ui.progressBar.setRange(0, 696924)
             self.ui.comboBox.setEnabled(False)
             self.combo_dict.clear()
@@ -1266,6 +1282,7 @@ class MainWindow(QMainWindow):
             # BFSsequence(view, scene, result_list, shape_list, exampler_pieces)
         elif self.mode == "ASTAR":
             self.ui.lineEdit.setPlaceholderText("ASTAR Mode")
+            self.ui.progressBar.setValue(0)
             self.ui.progressBar.setRange(0, 689378)
             self.ui.comboBox.setEnabled(False)
             self.combo_dict.clear()
@@ -1273,6 +1290,7 @@ class MainWindow(QMainWindow):
             # ASTARsequence(view, scene, result_list, shape_list, exampler_pieces)
         elif self.mode == "GREEDY":
             self.ui.lineEdit.setPlaceholderText("GREEDY Mode")
+            self.ui.progressBar.setValue(0)
             self.ui.progressBar.setRange(0, 696919)
             self.ui.comboBox.setEnabled(False)
             self.combo_dict.clear()
@@ -1280,6 +1298,8 @@ class MainWindow(QMainWindow):
             # GreedySequence(view, scene, result_list, shape_list, exampler_pieces)
         elif self.mode == "UCS":
             self.ui.lineEdit.setPlaceholderText("UCS Mode")
+            self.ui.progressBar.setValue(0)
+            self.ui.progressBar.setRange(0, 689378)
             self.ui.comboBox.setEnabled(False)
             self.combo_dict.clear()
             UniCostSearchSequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
