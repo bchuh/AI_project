@@ -1245,6 +1245,7 @@ class MainWindow(QMainWindow):
             self.ui.infoEdit.setPlainText(info)
         else:
             self.ui.infoEdit.setPlainText("Please Chose one Algorithm.")
+            self.ui.infoEdit.append("\n---------\nAuthors: \n- Liu YanQing, \n- Zhu Zengliang, \n- Yi RuiYue\n # Copyright (c) 2022,  Liu YanQing, Zhu Zengliang, Yi RuiYue. All rights reserved.\n-----------")
 
     def setAlgorithms(self, result_list, shape_list, exampler_pieces):
         if self.mode == "DFS":
