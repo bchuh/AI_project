@@ -20,6 +20,7 @@ import multiprocessing
 
 os.environ['QT_MAC_WANTS_LAYER'] = '1'
 # 序列化
+
 def serialize_instance(obj):
     d = {'__classname__': type(obj).__name__}
     d.update(vars(obj))
@@ -1168,10 +1169,10 @@ def GreedySequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list
 def UniCostSearchSequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces: list, loadUi: QMainWindow):
     ASTARsequence(view, scene, result_list, shape_list, exampler_pieces, loadUi, change_to_UniCostSearch=True)
 
-class MainWindow(QMainWindow):
+class MainWindow(QWidget):
 
     def __init__(self):
-        #super().__init__()
+        super().__init__()
 
         # 从文件中加载UI定义
         # 从 UI 定义中动态 创建一个相应的窗口对象

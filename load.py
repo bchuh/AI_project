@@ -34,14 +34,14 @@ layout.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
 layout.addWidget(label)
 label.show()
 view.showMaximized()
-mode = "BFS"
+mode = "NONE"
 nodes_dir = os.path.join(os.getcwd(), mode+'_nodes')
 folder_dirs = glob.glob(nodes_dir + "/*")
 folder_dirs.reverse()
 #Debug:
 combo_dict = {}
 shape_dict = {}
-organize = True
+organize = False
 
 if organize:
     i=1
@@ -92,16 +92,13 @@ else:
 #########
 _path = os.getcwd()
 _name = 'shape.dict'
-if mode == 'None':
-    _folder = "nodes"
-else:
-    _folder = mode+"_nodes"
+_folder = mode+"_nodes"
 _path = os.path.join(_path, _folder)
 _path = os.path.join(_path,  _name)
 with open(_path, 'rb') as f:
     shape_dict = pickle.load(f)
 ##---
-_path2 = os.getcwd()
+'''_path2 = os.getcwd()
 _path2 = os.path.join(_path2, "nodes")
 _path2 = os.path.join(_path2, "shape.dict")
 with open(_path2, 'rb') as f:
@@ -112,25 +109,28 @@ i=0
 for k in shape_dict.keys():
     if k not in shape_dict_new:
         print(k, str(i))
-    i+=1
+    i+=1'''
 ##---
 #########
 
 print("------Showing all shapes---------")
 
-'''_key = list(shape_dict.keys())[0]
+_key = list(shape_dict.keys())[0]
 for item in shape_dict[_key]:
     app.processEvents()
-    _node = item
+    _node:Node = item
+    encoding = _node.encodeMatrix()
+    mat = _node.reorgPieceMat()
     _node.paint(scene)
     view.show()
-    view.setBackgroundBrush(Qt.gray)
+    #view.setBackgroundBrush(Qt.gray)
     view.update()
     dieTime = QTime.currentTime().addMSecs(500)
     while (QTime.currentTime() < dieTime):
         QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
     scene.clear()
-    view.update()'''
+    view.update()
+    print(" ")
 i=1
 #在xxx_nodes中建立image文件夹
 _path = os.getcwd()
