@@ -1183,7 +1183,7 @@ class MainWindow(QWidget):
         # cafeteriaMenuUi = QtCore.QFile(":" + self.uiPath)
         ui_file = QFile(self.uiPath)
         ui_file.open(QFile.ReadOnly)
-        self.ui = QUiLoader().load(ui_file, self)
+        self.ui = QUiLoader().load(ui_file)
         #self.ui = QUiLoader().load(self.uiPath, self)
 
         screen = QGuiApplication.primaryScreen().geometry()
@@ -1645,6 +1645,7 @@ if __name__ == "__main__":
     start = time.time()
     app = QApplication([])
     mainwindow = MainWindow()
+    #mainwindow.show()
     mainwindow.ui.show()
     mainwindow.ui.showMaximized()
     mainwindow.SetUi()

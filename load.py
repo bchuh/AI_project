@@ -130,7 +130,8 @@ for item in shape_dict[_key]:
         QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
     scene.clear()
     view.update()
-    print(" ")
+    if _node.piece_matrix[3,0] > _node.piece_matrix[4,0]:
+        print(" ")
 i=1
 #在xxx_nodes中建立image文件夹
 _path = os.getcwd()
