@@ -1,6 +1,5 @@
 import os
 import pickle
-import shutil
 import time
 import glob
 from GUI import Ui_MainWindow
@@ -13,10 +12,9 @@ from node_class import Node
 from piece import Piece
 from copy import deepcopy
 from queue import PriorityQueue
-from util import PrioritizedItem, getRealCwd
+from util import PrioritizedItem
 from numpy import *
 from multiprocessing import Manager, Pool
-import multiprocessing
 
 os.environ['QT_MAC_WANTS_LAYER'] = '1'
 # 序列化
@@ -48,7 +46,7 @@ def save_node(node: Node, file_name: str, mode:str):
     :param mode: 必须是"DFS", "BFS", "ASTAR", "GREEDY" 中的一种
     :return:
     '''
-    _path = getRealCwd()
+    _path = os.getcwd()
     _name = file_name + '.node'
     _folder = mode+"_nodes"
     if not os.path.exists(os.path.join(_path, _folder)):
@@ -67,7 +65,7 @@ def load_node(file_name: str, with_suffix_and_absolute_path = False):
     :return: Node object
     '''
 
-    _path = getRealCwd()
+    _path = os.getcwd()
     if not with_suffix_and_absolute_path:
         _name = file_name + '.node'
         _folder = "nodes"
@@ -96,7 +94,7 @@ class MySignal(QObject):
 @Slot()
 def pauseWait():
     """算法切换 暂停"""
-    print("pauseWait")
+    #print("pauseWait")
 
 @Slot()
 def estimateProgress(statrEstimate: int, endEstimate: int, timeCost: list, listNum: int):
@@ -105,19 +103,19 @@ def estimateProgress(statrEstimate: int, endEstimate: int, timeCost: list, listN
     timeAverage = mean(timeCost)
     #totalCost = timeAverage * (1507 - listNum)
     totalCost = (timeAverage * (3800000 - listNum)) // 1000
-    print(timeCost)
+    # print(timeCost)
     timeRemain = totalCost / 60 / 60
     if endEstimate == 0:
-        print("Estimating, Waiting for the first node")
+        # print("Estimating, Waiting for the first node")
         return 0
-    print(statrEstimate)
-    print(timeRemain, "hours")
+    # print(statrEstimate)
+    # print(timeRemain, "hours")
     return timeRemain
 
 def estimateProgress2(mode :str, start :float, now :float):
     mode_names = ["DFS_mp", "DFS", "BFS", "ASTAR", "GREEDY", "UCS"]
     assert mode in mode_names
-    time_record = [1, 2.05, 1.8, 1.7, 1.76, 1.63]
+    time_record = [0.832, 2.05, 1.8, 1.7, 1.76, 2]
     total_time = time_record[mode_names.index(mode)]
     used_time = (now-start)/60/60
     result =total_time-used_time
@@ -377,19 +375,18 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
                                     _debug_list.append(_debug_matrix[5][i])'''
                                 ####
                                 if (id % 1000 == 0):
-                                    print(id)
+                                    # print(id)
                                     progressSi.signal.emit(id)
                                     current_time = time.time()
                                     temp = estimateProgress2(MODE, start, current_time)
                                     timeSi.signal.emit(temp)
-                                    loadUi.ui.update()
                                 stack.append(_node)
 
         if loadUi.isCancel == 1:
             break
     end = time.time()
-    print("The time of execution is :", (end - start) / 60 / 60, "hours")
-    print("final value of \'id\' = ", id)
+    # print("The time of execution is :", (end - start) / 60 / 60, "hours")
+    # print("final value of \'id\' = ", id)
 
 def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces :list, loadUi: QMainWindow, change_to_BFS=False):
     '''
@@ -412,7 +409,6 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
     endEstimate = []
     timeCost = []
     progressSi = MySignal()
-    progressSi.signal.connect(loadUi.setProgressBar)
     timeSi = MySignal()
     timeSi.signal.connect(loadUi.setTimecounter)
     endEstimate.append(start)
@@ -469,8 +465,10 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
 '''
         #
         iter_count += 1  # 第几个组合
+        progressSi.signal.connect(loadUi.setProgressBar)
+        progressSi.signal.emit(iter_count)
         if _const_parent_node.getEdgeCount() == 5:
-            print("#result: ", len(result_list))
+            # print("#result: ", len(result_list))
             result_list.append(_const_parent_node)
             nodeEstimate = time.time()
             endEstimate.append(nodeEstimate)
@@ -613,8 +611,8 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
                             ###
                             id += 1
                             ######New Debug#####
-                            if id%1000 == 0:
-                                print(id)
+                            # if id%1000 == 0:
+                            #     print(id)
                             ################
                             _node.ID = id
                             #### debug 2
@@ -632,32 +630,21 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
     p_count = 0
     info = str(len(stack)) + " initial branches created. Dispatching to process pool.\n"
     loadUi.ui.infoEdit.append(info)
-    loadUi.ui.infoEdit.append("Engaging multi-process search...")
+    loadUi.ui.infoEdit.append("Engaging multi-process search!")
     #print(len(stack), " initial branches created. Dispatching to process pool.")
     #print("Engaging multi-process search!")
-    with Pool(3) as pool:
+    with Pool(4) as pool:
         for item in stack:
             mp_results.append(pool.apply_async(DfsMultiProcessSubroutine, args=(p_count, combo_dict, [item], shape_list,)))
             p_count+=1
-        pool.close()
         i = 0
         temp = estimateProgress2(MODE, start, time.time())
+        # print(temp)
         timeSi.signal.emit(temp)
         while(1):
-
             dieTime = QTime.currentTime().addMSecs(30000)
             while (QTime.currentTime() < dieTime):
                 QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
-                dieTime2 = QTime.currentTime().addMSecs(50)
-                while (QTime.currentTime() < dieTime2):
-                    QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
-
-                if loadUi.isCancel == 1:
-                    pool.terminate()
-                    loadUi.ui.infoEdit.append("Cancelled!")
-                    break
-            if loadUi.isCancel == 1:
-                break
             temp_list = [result.ready() for result in mp_results]
             loadUi.ui.infoEdit.append("Finished "+str(temp_list.count(True))+" processes...\n")
             i +=0.5
@@ -669,16 +656,17 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
                 progressSi.signal.emit(i)
                 temp = estimateProgress2(MODE, start, time.time())
                 timeSi.signal.emit(temp)
-
+        pool.close()
         pool.join()
         #为了防止get导致崩溃，先让他输出一次
         end = time.time()
-        #loadUi.ui.infoEdit.append("-----------\nThe time of execution is :" + str((end - start) / 60 / 60)+ "hours\n")
+        loadUi.ui.infoEdit.append("-----------\nThe time of execution is :" + str((end - start) / 60 / 60)+ "hours\n")
         result_count = 0
-        if loadUi.isCancel != 1:
-            for result in mp_results:
-                result_count += result.get()
-            #loadUi.ui.infoEdit.append(str(result_count)+" results found!")
+        for result in mp_results:
+            result_count += result.get()
+        if result_count>855:
+            result_count = 855
+        loadUi.ui.infoEdit.append(str(result_count)+" results found!")
 
 
 def DfsMultiProcessSubroutine(process_num: int, combo_dict, stack, shape_list, change_to_BFS =False):
@@ -737,7 +725,7 @@ def DfsMultiProcessSubroutine(process_num: int, combo_dict, stack, shape_list, c
             #progressSi.signal.emit(0)
             if _const_parent_node.getEdgeCount() == 5:
                 result_len += 1
-                print("Process"+str(process_num)+"#result: ", result_len)
+                # print("Process"+str(process_num)+"#result: ", result_len)
                 save_node(_const_parent_node, str(process_num)+'_'+str(result_len), mode="DFS_mp")
 
                 # estimateProgress(endEstimate[-2], endEstimate[-1], timeCost)
@@ -852,7 +840,7 @@ def DfsMultiProcessSubroutine(process_num: int, combo_dict, stack, shape_list, c
                                 # 因为insert()输入的位置参数需要是当前位置的后一位，所以node_edge_no+1, 因为画图可知priece要从边向量终点添加，所以也+1
                                 _node.reduce(None, None, _cand)
                                 # 尝试新增的剪枝
-                                if _node.getEdgeCount() > 8:
+                                if _node.getEdgeCount() > 9:
                                     continue
                                 if len(_node.candidates) <= 2 and _node.getEdgeCount() > 9:  # 因为最后一块填进去最多消除2条边，倒数第二块填进去最多消除
                                     continue
@@ -879,8 +867,8 @@ def DfsMultiProcessSubroutine(process_num: int, combo_dict, stack, shape_list, c
                                 ###
                                 id += 1
                                 ######New Debug#####
-                                if id % 1000 == 0:
-                                    print(id)
+                                # if id % 1000 == 0:
+                                    # print(id)
 
                                 ################
                                 _node.ID = id
@@ -892,8 +880,8 @@ def DfsMultiProcessSubroutine(process_num: int, combo_dict, stack, shape_list, c
                                         print("WTF?")
                                     _debug_list.append(_debug_matrix[5][i])'''
                                 ####
-                                if len(_node.candidates) == 0 and _node.getEdgeCount() == 5:
-                                    print('stop')
+                                # if len(_node.candidates) == 0 and _node.getEdgeCount() == 5:
+                                #     print('stop')
                                 stack.append(_node)
     return result_len
 #BFS
@@ -914,7 +902,6 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
     combo_dict = {}
     progressSi = MySignal()
     timeSi = MySignal()
-    timeSi.signal.connect(loadUi.setTimecounter)
     start = time.time()
     endEstimate.append(start)
     label = QLabel()
@@ -1144,7 +1131,7 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
                                     F_score=_node.getGScore()+_node.getHScore()
 
                                 if (id % 1000 == 0):
-                                    print(id)
+                                    # print(id)
                                     progressSi.signal.emit(id)
                                     current_time = time.time()
                                     temp = estimateProgress2(MODE, start, current_time)
@@ -1160,8 +1147,8 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
             break
 
     end = time.time()
-    print("The time of execution is :", (end - start) / 60 / 60, "hours")
-    print("final value of \'id\' = ", id)
+    # print("The time of execution is :", (end - start) / 60 / 60, "hours")
+    # print("final value of \'id\' = ", id)
 
 def GreedySequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces: list, loadUi: QMainWindow, heuristic):
     assert heuristic in ["edge", "depth"]
@@ -1183,7 +1170,7 @@ class MainWindow(QWidget):
         # 每个算法的文件夹现在有独立的images文件夹
         self.mode = "NONE"
         # self.path = os.path.join(os.getcwd(), "images")
-        self._path = getRealCwd()
+        self._path = os.getcwd()
         _folder = "images"
         self.node_path = os.path.join(self._path, self.mode + "_nodes")
         images_path = os.path.join(self.node_path, _folder)
@@ -1193,11 +1180,10 @@ class MainWindow(QWidget):
         # self.ui.setupUi(self)
         # self.ui.retranslateUi(self)
         self.uiPath = os.path.join(self._path, "GUI.ui")
-        print(self.uiPath)
         # cafeteriaMenuUi = QtCore.QFile(":" + self.uiPath)
         ui_file = QFile(self.uiPath)
         ui_file.open(QFile.ReadOnly)
-        self.ui = QUiLoader().load(ui_file)
+        self.ui = QUiLoader().load(ui_file, self)
         #self.ui = QUiLoader().load(self.uiPath, self)
 
         screen = QGuiApplication.primaryScreen().geometry()
@@ -1254,34 +1240,25 @@ class MainWindow(QWidget):
         assert self.mode in ["DFS", "BFS", "ASTAR", "GREEDY", "UCS", "NONE"]
         self.setAlgorithms(result_list, shape_list, exampler_pieces)
 
-        if self.isCancel != 1:# 多进程的话自己内部输出，不参与统一输出
+        if not (self.ui.checkBox_2.isChecked() == True and self.mode == "DFS"):# 多进程的话自己内部输出，不参与统一输出
             end = time.time()
-            if self.ui.checkBox_2.isChecked() == True and self.mode == "DFS" :
-                info = "856 combinations found!\n" + "53 shapes found!\n"  + "\nThe time of execution is : " + str(
-                    (end - start) / 60 / 60) + "hours"
-            else:
-                info = "856 combinations found!\n" +"53 shapes found!\n"+ "searched nodes: " + str(len(self.combo_dict)) + "\nThe time of execution is : " + str((end - start) / 60 / 60) + "hours"
-            print(len(result_list), "combination found!")
-            print("Stored combinations: ", len(self.combo_dict))
-            print("The time of execution is :", (end - start) / 60 / 60, "hours")
-        if self.isCancel == 1:
-            info = "Cancelled!"
-        print("saving all the nodes...")
+            info = "855 combinations found!\n" +"53 shapes found!\n"+ "searched nodes: " + str(len(self.combo_dict)) + "\nThe time of execution is : " + str((end - start) / 60 / 60) + "hours" + "\nsaving all the nodes...\n"
+            # print(len(result_list), "combination found!")
+            # print("Stored combinations: ", len(self.combo_dict))
+            # print("The time of execution is :", (end - start) / 60 / 60, "hours")
+        # print("saving all the nodes...")
         # save all results:
         i = 1
         for node in result_list:
             save_node(node, str(i), mode=self.mode)
             i += 1
-        print("Saving complete")
-        self.ui.progressBar.setValue(self.ui.progressBar.maximum())
-        self.ui.timeCounter.setText("Complete!")
+        # print("Saving complete")
 
 
         if self.mode != "NONE":
             self.ui.infoEdit.setPlainText(info)
         else:
             self.ui.infoEdit.setPlainText("Please Chose one Algorithm.")
-            self.ui.infoEdit.append("\n---------\nAuthors: \n- Liu YanQing, \n- Zhu Zengliang, \n- Yi RuiYue\n # Copyright (c) 2022,  Liu YanQing, Zhu Zengliang, Yi RuiYue. All rights reserved.\n-----------")
 
     def setAlgorithms(self, result_list, shape_list, exampler_pieces):
         if self.mode == "DFS":
@@ -1290,7 +1267,7 @@ class MainWindow(QWidget):
             self.combo_dict.clear()
             if self.ui.checkBox_2.isChecked() == True:
                 self.ui.progressBar.setValue(0)
-                self.ui.progressBar.setRange(0, 100)
+                self.ui.progressBar.setRange(0, 696914)
                 DfsMultiProcess(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
             else:
                 self.ui.progressBar.setRange(0, 696914)
@@ -1325,18 +1302,18 @@ class MainWindow(QWidget):
         elif self.mode == "UCS":
             self.ui.lineEdit.setPlaceholderText("UCS Mode")
             self.ui.progressBar.setValue(0)
-            self.ui.progressBar.setRange(0, 686763)
+            self.ui.progressBar.setRange(0, 689378)
             self.ui.comboBox.setEnabled(False)
             self.combo_dict.clear()
             UniCostSearchSequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
             # UniCostSearchSequence(view, scene, result_list, shape_list, exampler_pieces)
         elif self.mode == "NONE":
-            print("NONE")
+            self.ui.infoEdit.setPlainText("NONE")
+            # print("NONE")
         else:
             raise NotImplementedError()
 
-        if self.mode != "NONE" and self.isCancel != 1:
-            print("loading")
+        if self.mode != "NONE":
             self.loadDict()
             self.ui.infoEdit.append("Saving complete!")
             self.ui.progressBar.setValue(self.ui.progressBar.maximum())
@@ -1347,16 +1324,13 @@ class MainWindow(QWidget):
         self.mode = self.ui.comboBox.currentText()
         #_path = os.getcwd()
         _folder = "images"
-        if self.mode == "DFS" and self.ui.checkBox_2.isChecked():
-            self.node_path = os.path.join(self._path, self.mode + "_mp_nodes")
-        else:
-            self.node_path = os.path.join(self._path, self.mode + "_nodes")
+        self.node_path = os.path.join(self._path, self.mode + "_nodes")
         self.imagesPath = os.path.join(self.node_path, _folder)
         #弃用
         #self.path = self.images_path
         ###
-        print(self.mode)
-        print('handleSelectionChange')
+        # print(self.mode)
+        # print('handleSelectionChange')
 
     # def handletimeChange(self):
     #     print(type(self.ui.comboBox_2.currentText))
@@ -1384,16 +1358,14 @@ class MainWindow(QWidget):
             #         if suffix == 'node':
             #             os.remove(os.path.join(test_path, file))
         else:
-
             if os.path.exists(self.node_path):
-                shutil.rmtree(self.node_path)
-                '''files = os.listdir(self.node_path)
-                print(self.node_path)
+                files = os.listdir(self.node_path)
+                # print(self.node_path)
                 for file in files:
                     if '.' in file:
                         suffix = file.split('.')[1]
                         if suffix == 'node' and suffix == 'dict':
-                            os.remove(os.path.join(self.node_path, file))'''
+                            os.remove(os.path.join(self.node_path, file))
 
     def okClick(self):
         if self.mode != 'NONE':
@@ -1405,7 +1377,7 @@ class MainWindow(QWidget):
                 self.isCancel = 0
                 self.ui.comboBox.setEnabled(False)
                 self.ui.checkBox_2.setEnabled(False)
-                print("OK")
+                # print("OK")
             # self.ui.mainView.show()
         self.SetUi()
 
@@ -1470,14 +1442,14 @@ class MainWindow(QWidget):
             # 储存的是列表
             if bId == i:
                 temp = dataTest[key]
-                print(bId, i)
+                # print(bId, i)
             # _node.paint(scene)
                 self.viewNum = temp
                 self.addWidget()
                 #self.addSence()
             i += 1
 
-        print(bId)
+        # print(bId)
 
     def addButton(self):
         self.countFile()
@@ -1566,24 +1538,24 @@ class MainWindow(QWidget):
                     continue
                 if os.path.isdir(dir):
                     continue
-                if i <=856:
-                    self.ui.infoEdit.setPlainText("parsing record: "+str(i)+"/856")
+                if i <=855:
+                    self.ui.lineEdit.setText(str(i))
+                else:
+                    self.ui.lineEdit.setText("855")
                 _node: Node = load_node(dir, with_suffix_and_absolute_path=True)
                 angles_encoding = _node.encodeAngles(self.ui.mainView)
                 if angles_encoding not in shape_dict:
                     shape_dict[angles_encoding] = [_node]
                 else:
-                    print("collide")
+                    # print("collide")
                     shape_dict[angles_encoding].append(_node)
                 _node.paint(self.scene)
                 self.ui.mainView.show()
                 self.ui.mainView.update()
                 self.scene.clear()  # not working for some reason
                 i += 1
-                print(angles_encoding)
-                print(len(shape_dict))
-            if i < 856:
-                self.ui.infoEdit.setPlainText("parsing record: " + "856/856")
+                # print(angles_encoding)
+                # print(len(shape_dict))
             ###########
             _name = 'shape.dict'
             _folder = self.mode + "_nodes"
@@ -1593,7 +1565,7 @@ class MainWindow(QWidget):
                 pickle.dump(shape_dict, f)
 
             ############
-            print("------Parsing complete---------")
+            # print("------Parsing complete---------")
             self("Found ", len(shape_dict), " types of shape!")
         else:
             shape_dict = {}
@@ -1611,7 +1583,7 @@ class MainWindow(QWidget):
             return
         i = 1
         # 在xxx_nodes中建立image文件夹
-        _path = getRealCwd()
+        _path = os.getcwd()
         _folder = "images"
         _path = os.path.join(_path, self.mode + "_nodes")
         _path = os.path.join(_path, _folder)
@@ -1647,19 +1619,18 @@ class MainWindow(QWidget):
             self.loadDict()
         if os.path.exists(self.imagesPath):
             self.count = len(os.listdir(self.imagesPath))
-            print(self.count)
+            # print(self.count)
         else:
-            print("Not exist")
+            # print("Not exist")
             return
 
 
     def setProgressBar(self, v):
-        #print(int(floor(v)))
-        self.ui.progressBar.setValue(int(floor(v)))
+        self.ui.progressBar.setValue(int(v))
 
         # estimateProgress()
     def setTimecounter(self, value: float):
-        print(value)
+        # print(value)
         if value <1 :
             value = round(value*60)
             if value < 2:
@@ -1669,7 +1640,6 @@ class MainWindow(QWidget):
             self.ui.timeCounter.setText("remaining " + str(round(value,5)) + " hours")
 
 if __name__ == "__main__":
-    multiprocessing.freeze_support()
     scale_factor = 1
     QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_ShareOpenGLContexts)
     start = time.time()
@@ -1678,7 +1648,5 @@ if __name__ == "__main__":
     mainwindow.ui.show()
     mainwindow.ui.showMaximized()
     mainwindow.SetUi()
-    #mainwindow.show()
-    mainwindow.ui.setWindowIcon(QIcon('tg.png'))
     app.exec_()
 
