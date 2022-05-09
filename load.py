@@ -121,6 +121,7 @@ for item in shape_dict[_key]:
     _node:Node = item
     encoding = _node.encodeMatrix()
     mat = _node.reorgPieceMat()
+    encoding_angle = _node.reorgAngles()
     _node.paint(scene)
     view.show()
     #view.setBackgroundBrush(Qt.gray)
@@ -130,8 +131,7 @@ for item in shape_dict[_key]:
         QCoreApplication.processEvents(QEventLoop.AllEvents, 20)
     scene.clear()
     view.update()
-    if _node.piece_matrix[3,0] > _node.piece_matrix[4,0]:
-        print(" ")
+    print(" ")
 i=1
 #在xxx_nodes中建立image文件夹
 _path = os.getcwd()
