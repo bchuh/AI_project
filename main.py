@@ -13,7 +13,7 @@ from node_class import Node
 from piece import Piece
 from copy import deepcopy
 from queue import PriorityQueue
-from util import PrioritizedItem
+from util import PrioritizedItem, getRealCwd
 from numpy import *
 from multiprocessing import Manager, Pool
 import multiprocessing
@@ -47,7 +47,7 @@ def save_node(node: Node, file_name: str, mode:str):
     :param mode: 必须是"DFS", "BFS", "ASTAR", "GREEDY" 中的一种
     :return:
     '''
-    _path = os.getcwd()
+    _path = getRealCwd()
     _name = file_name + '.node'
     _folder = mode+"_nodes"
     if not os.path.exists(os.path.join(_path, _folder)):
@@ -66,7 +66,7 @@ def load_node(file_name: str, with_suffix_and_absolute_path = False):
     :return: Node object
     '''
 
-    _path = os.getcwd()
+    _path = getRealCwd()
     if not with_suffix_and_absolute_path:
         _name = file_name + '.node'
         _folder = "nodes"
@@ -1182,7 +1182,7 @@ class MainWindow(QMainWindow):
         # 每个算法的文件夹现在有独立的images文件夹
         self.mode = "NONE"
         # self.path = os.path.join(os.getcwd(), "images")
-        self._path = os.getcwd()
+        self._path = getRealCwd()
         _folder = "images"
         self.node_path = os.path.join(self._path, self.mode + "_nodes")
         images_path = os.path.join(self.node_path, _folder)
@@ -1192,6 +1192,7 @@ class MainWindow(QMainWindow):
         # self.ui.setupUi(self)
         # self.ui.retranslateUi(self)
         self.uiPath = os.path.join(self._path, "GUI.ui")
+        print(self.uiPath)
         # cafeteriaMenuUi = QtCore.QFile(":" + self.uiPath)
         ui_file = QFile(self.uiPath)
         ui_file.open(QFile.ReadOnly)
@@ -1609,7 +1610,7 @@ class MainWindow(QMainWindow):
             return
         i = 1
         # 在xxx_nodes中建立image文件夹
-        _path = os.getcwd()
+        _path = getRealCwd()
         _folder = "images"
         _path = os.path.join(_path, self.mode + "_nodes")
         _path = os.path.join(_path, _folder)
