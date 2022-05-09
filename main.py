@@ -93,7 +93,7 @@ class MySignal(QObject):
 @Slot()
 def pauseWait():
     """算法切换 暂停"""
-    print("pauseWait")
+    #print("pauseWait")
 
 @Slot()
 def estimateProgress(statrEstimate: int, endEstimate: int, timeCost: list, listNum: int):
@@ -102,13 +102,13 @@ def estimateProgress(statrEstimate: int, endEstimate: int, timeCost: list, listN
     timeAverage = mean(timeCost)
     #totalCost = timeAverage * (1507 - listNum)
     totalCost = (timeAverage * (3800000 - listNum)) // 1000
-    print(timeCost)
+    # print(timeCost)
     timeRemain = totalCost / 60 / 60
     if endEstimate == 0:
-        print("Estimating, Waiting for the first node")
+        # print("Estimating, Waiting for the first node")
         return 0
-    print(statrEstimate)
-    print(timeRemain, "hours")
+    # print(statrEstimate)
+    # print(timeRemain, "hours")
     return timeRemain
 
 def estimateProgress2(mode :str, start :float, now :float):
@@ -374,7 +374,7 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
                                     _debug_list.append(_debug_matrix[5][i])'''
                                 ####
                                 if (id % 1000 == 0):
-                                    print(id)
+                                    # print(id)
                                     progressSi.signal.emit(id)
                                     current_time = time.time()
                                     temp = estimateProgress2(MODE, start, current_time)
@@ -384,8 +384,8 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
         if loadUi.isCancel == 1:
             break
     end = time.time()
-    print("The time of execution is :", (end - start) / 60 / 60, "hours")
-    print("final value of \'id\' = ", id)
+    # print("The time of execution is :", (end - start) / 60 / 60, "hours")
+    # print("final value of \'id\' = ", id)
 
 def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces :list, loadUi: QMainWindow, change_to_BFS=False):
     '''
@@ -467,7 +467,7 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
         progressSi.signal.connect(loadUi.setProgressBar)
         progressSi.signal.emit(iter_count)
         if _const_parent_node.getEdgeCount() == 5:
-            print("#result: ", len(result_list))
+            # print("#result: ", len(result_list))
             result_list.append(_const_parent_node)
             nodeEstimate = time.time()
             endEstimate.append(nodeEstimate)
@@ -610,8 +610,8 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
                             ###
                             id += 1
                             ######New Debug#####
-                            if id%1000 == 0:
-                                print(id)
+                            # if id%1000 == 0:
+                            #     print(id)
                             ################
                             _node.ID = id
                             #### debug 2
@@ -638,7 +638,7 @@ def DfsMultiProcess(view: QGraphicsView, scene: QGraphicsScene, result_list: lis
             p_count+=1
         i = 0
         temp = estimateProgress2(MODE, start, time.time())
-        print(temp)
+        # print(temp)
         timeSi.signal.emit(temp)
         while(1):
             dieTime = QTime.currentTime().addMSecs(30000)
@@ -724,7 +724,7 @@ def DfsMultiProcessSubroutine(process_num: int, combo_dict, stack, shape_list, c
             #progressSi.signal.emit(0)
             if _const_parent_node.getEdgeCount() == 5:
                 result_len += 1
-                print("Process"+str(process_num)+"#result: ", result_len)
+                # print("Process"+str(process_num)+"#result: ", result_len)
                 save_node(_const_parent_node, str(process_num)+'_'+str(result_len), mode="DFS_mp")
 
                 # estimateProgress(endEstimate[-2], endEstimate[-1], timeCost)
@@ -866,8 +866,8 @@ def DfsMultiProcessSubroutine(process_num: int, combo_dict, stack, shape_list, c
                                 ###
                                 id += 1
                                 ######New Debug#####
-                                if id % 1000 == 0:
-                                    print(id)
+                                # if id % 1000 == 0:
+                                    # print(id)
 
                                 ################
                                 _node.ID = id
@@ -879,8 +879,8 @@ def DfsMultiProcessSubroutine(process_num: int, combo_dict, stack, shape_list, c
                                         print("WTF?")
                                     _debug_list.append(_debug_matrix[5][i])'''
                                 ####
-                                if len(_node.candidates) == 0 and _node.getEdgeCount() == 5:
-                                    print('stop')
+                                # if len(_node.candidates) == 0 and _node.getEdgeCount() == 5:
+                                #     print('stop')
                                 stack.append(_node)
     return result_len
 #BFS
@@ -1130,7 +1130,7 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
                                     F_score=_node.getGScore()+_node.getHScore()
 
                                 if (id % 1000 == 0):
-                                    print(id)
+                                    # print(id)
                                     progressSi.signal.emit(id)
                                     current_time = time.time()
                                     temp = estimateProgress2(MODE, start, current_time)
@@ -1146,8 +1146,8 @@ def ASTARsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list,
             break
 
     end = time.time()
-    print("The time of execution is :", (end - start) / 60 / 60, "hours")
-    print("final value of \'id\' = ", id)
+    # print("The time of execution is :", (end - start) / 60 / 60, "hours")
+    # print("final value of \'id\' = ", id)
 
 def GreedySequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, shape_list: list, exampler_pieces: list, loadUi: QMainWindow, heuristic):
     assert heuristic in ["edge", "depth"]
@@ -1242,16 +1242,16 @@ class MainWindow(QMainWindow):
         if not (self.ui.checkBox_2.isChecked() == True and self.mode == "DFS"):# 多进程的话自己内部输出，不参与统一输出
             end = time.time()
             info = "855 combinations found!\n" +"53 shapes found!\n"+ "searched nodes: " + str(len(self.combo_dict)) + "\nThe time of execution is : " + str((end - start) / 60 / 60) + "hours" + "\nsaving all the nodes...\n"
-            print(len(result_list), "combination found!")
-            print("Stored combinations: ", len(self.combo_dict))
-            print("The time of execution is :", (end - start) / 60 / 60, "hours")
-        print("saving all the nodes...")
+            # print(len(result_list), "combination found!")
+            # print("Stored combinations: ", len(self.combo_dict))
+            # print("The time of execution is :", (end - start) / 60 / 60, "hours")
+        # print("saving all the nodes...")
         # save all results:
         i = 1
         for node in result_list:
             save_node(node, str(i), mode=self.mode)
             i += 1
-        print("Saving complete")
+        # print("Saving complete")
 
 
         if self.mode != "NONE":
@@ -1307,7 +1307,8 @@ class MainWindow(QMainWindow):
             UniCostSearchSequence(self.ui.mainView, self.scene, result_list, shape_list, exampler_pieces, self)
             # UniCostSearchSequence(view, scene, result_list, shape_list, exampler_pieces)
         elif self.mode == "NONE":
-            print("NONE")
+            self.ui.infoEdit.setPlainText("NONE")
+            # print("NONE")
         else:
             raise NotImplementedError()
 
@@ -1327,8 +1328,8 @@ class MainWindow(QMainWindow):
         #弃用
         #self.path = self.images_path
         ###
-        print(self.mode)
-        print('handleSelectionChange')
+        # print(self.mode)
+        # print('handleSelectionChange')
 
     # def handletimeChange(self):
     #     print(type(self.ui.comboBox_2.currentText))
@@ -1358,7 +1359,7 @@ class MainWindow(QMainWindow):
         else:
             if os.path.exists(self.node_path):
                 files = os.listdir(self.node_path)
-                print(self.node_path)
+                # print(self.node_path)
                 for file in files:
                     if '.' in file:
                         suffix = file.split('.')[1]
@@ -1375,7 +1376,7 @@ class MainWindow(QMainWindow):
                 self.isCancel = 0
                 self.ui.comboBox.setEnabled(False)
                 self.ui.checkBox_2.setEnabled(False)
-                print("OK")
+                # print("OK")
             # self.ui.mainView.show()
         self.SetUi()
 
@@ -1440,14 +1441,14 @@ class MainWindow(QMainWindow):
             # 储存的是列表
             if bId == i:
                 temp = dataTest[key]
-                print(bId, i)
+                # print(bId, i)
             # _node.paint(scene)
                 self.viewNum = temp
                 self.addWidget()
                 #self.addSence()
             i += 1
 
-        print(bId)
+        # print(bId)
 
     def addButton(self):
         self.countFile()
@@ -1545,15 +1546,15 @@ class MainWindow(QMainWindow):
                 if angles_encoding not in shape_dict:
                     shape_dict[angles_encoding] = [_node]
                 else:
-                    print("collide")
+                    # print("collide")
                     shape_dict[angles_encoding].append(_node)
                 _node.paint(self.scene)
                 self.ui.mainView.show()
                 self.ui.mainView.update()
                 self.scene.clear()  # not working for some reason
                 i += 1
-                print(angles_encoding)
-                print(len(shape_dict))
+                # print(angles_encoding)
+                # print(len(shape_dict))
             ###########
             _name = 'shape.dict'
             _folder = self.mode + "_nodes"
@@ -1563,7 +1564,7 @@ class MainWindow(QMainWindow):
                 pickle.dump(shape_dict, f)
 
             ############
-            print("------Parsing complete---------")
+            # print("------Parsing complete---------")
             self("Found ", len(shape_dict), " types of shape!")
         else:
             shape_dict = {}
@@ -1617,9 +1618,9 @@ class MainWindow(QMainWindow):
             self.loadDict()
         if os.path.exists(self.imagesPath):
             self.count = len(os.listdir(self.imagesPath))
-            print(self.count)
+            # print(self.count)
         else:
-            print("Not exist")
+            # print("Not exist")
             return
 
 
@@ -1628,7 +1629,7 @@ class MainWindow(QMainWindow):
 
         # estimateProgress()
     def setTimecounter(self, value: float):
-        print(value)
+        # print(value)
         if value <1 :
             value = round(value*60)
             if value < 2:
