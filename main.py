@@ -152,6 +152,13 @@ def DFSsequence(view: QGraphicsView, scene: QGraphicsScene, result_list: list, s
         Piece(shape_list[_node.candidates.pop(2)], 2),
         False
     )
+    ####
+    progressSi.signal.emit(0)
+    current_time = time.time()
+    temp = estimateProgress2(MODE, start, current_time)
+    timeSi.signal.emit(temp)
+    loadUi.ui.update()
+    ####
 
     stack.append(_node)
     id = 0
@@ -1402,6 +1409,7 @@ class MainWindow(QWidget):
                 self.ui.QUIT.show()
                 self.ui.NEXT.show()
                 self.isCancel = 0
+                self.is_paused = True
                 self.ui.comboBox.setEnabled(False)
                 self.ui.checkBox_2.setEnabled(False)
                 print("OK")
