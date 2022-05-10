@@ -1502,7 +1502,10 @@ class MainWindow(QWidget):
             self.buttonList.append(QPushButton(str(pId + 1), self.ui))
             # button = QPushButton(str(pId + 1), self.ui)
             #path = './'+ self.mode+"_nodes" + '/' + 'images/'+str(pId + 1)
-            imagePath = "./"+ self.mode + "_nodes"+"/images/"+str(pId + 1)
+            _name = str(pId + 1)
+            _folder = self.mode + "_nodes" + "/images"
+            imagePath = os.path.join(self._path, _folder, _name)
+            #imagePath = "./"+ self.mode + "_nodes"+"/images/"+str(pId + 1)
             '''_path = os.getcwd()
             imagePath = os.path.join(os.path.join(_path, "images"), str(pId + 1))'''
             '''if os.name == "nt":
