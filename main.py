@@ -1290,6 +1290,9 @@ class MainWindow(QWidget):
             self.ui.infoEdit.append("\n\n\n\n---------\nTangram Pentagons Formation System\n-------- \nAuthors: \n- Liu YanQing, \n- Zhu Zengliang, \n- Yi RuiYue\n\n # Copyright (c) 2022,  Liu YanQing, Zhu Zengliang, Yi RuiYue. All rights reserved.\n-----------")
 
     def setAlgorithms(self, result_list, shape_list, exampler_pieces):
+        if self.ui.checkBox.isChecked() == False:
+            self.scene.clear()
+        app.processEvents()
         if self.mode == "DFS":
             self.ui.lineEdit.setPlaceholderText("DFS Mode")
             self.ui.comboBox.setEnabled(False)
