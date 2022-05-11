@@ -1,5 +1,5 @@
 # Tangram pentagons generator
-![](Readme 26a8368e4ba041768a5bbd16cd8735f3/meme.jpg)
+![intro](Readme%2026a8368e4ba041768a5bbd16cd8735f3/meme.jpg)
 + This is the group project of undergraduate course Artificial Intelligence 2022 @ Macau University of Science and Technology 
 + Copyright (c) 2022, Liu YanQing, Zhu Zengliang, Yi RuiYu. All rights reserved. 
 
